@@ -29,7 +29,7 @@ st.markdown("---")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    input_count = len(list(REPORT_INPUTS_DIR.glob('*.xlsx'))) + len(list(REPORT_INPUTS_DIR.glob('*.pdf')))
+    input_count = len(list(REPORT_INPUTS_DIR.glob('*.xlsx'))) + len(list(REPORT_INPUTS_DIR.glob('*.xlsm'))) + len(list(REPORT_INPUTS_DIR.glob('*.pdf')))
     st.metric("Input Files", input_count)
 
 with col2:
@@ -53,22 +53,27 @@ st.markdown("---")
 # Quick navigation
 st.subheader("Quick Actions")
 
-col_a, col_b, col_c = st.columns(3)
+col_a, col_b, col_c, col_d = st.columns(4)
 
 with col_a:
-    st.markdown("### Run Assessment")
-    st.markdown("Upload financial data and generate a credit assessment report.")
-    st.page_link("pages/1_Run_Assessment.py", label="Go to Run Assessment", icon="▶️")
+    st.markdown("### Quick Assessment")
+    st.markdown("Upload files and generate a report in one click.")
+    st.page_link("pages/1_Quick_Assessment.py", label="Go to Quick Assessment", icon="⚡")
 
 with col_b:
-    st.markdown("### Edit Prompts")
-    st.markdown("Modify prompt sections independently and track changes.")
-    st.page_link("pages/2_Prompt_Editor.py", label="Go to Prompt Editor", icon="✏️")
+    st.markdown("### Dev Pipeline")
+    st.markdown("Full 6-stage pipeline for framework development.")
+    st.page_link("pages/2_Run_Assessment.py", label="Go to Dev Pipeline", icon="▶️")
 
 with col_c:
+    st.markdown("### Edit Prompts")
+    st.markdown("Modify prompt sections independently and track changes.")
+    st.page_link("pages/3_Prompt_Editor.py", label="Go to Prompt Editor", icon="✏️")
+
+with col_d:
     st.markdown("### Manage Examples")
     st.markdown("Add or remove few-shot learning examples for report generation.")
-    st.page_link("pages/3_Examples_Manager.py", label="Go to Examples Manager", icon="📁")
+    st.page_link("pages/4_Examples_Manager.py", label="Go to Examples Manager", icon="📁")
 
 st.markdown("---")
 
@@ -90,4 +95,4 @@ if html_reports:
                     key=f"dl_{report.name}"
                 )
 else:
-    st.info("No reports generated yet. Go to Run Assessment to create your first report.")
+    st.info("No reports generated yet. Go to Quick Assessment to create your first report.")

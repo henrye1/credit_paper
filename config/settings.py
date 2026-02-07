@@ -19,6 +19,7 @@ AUDIT_LLM_OUTPUT_DIR = DATA_DIR / "audit_llm_output"
 EVAL_INPUT_DIR = DATA_DIR / "eval_input"
 EVAL_OUTPUT_DIR = DATA_DIR / "eval_output"
 CONVERTED_REPORTS_DIR = DATA_DIR / "converted_reports"
+ASSESSMENTS_DIR = DATA_DIR / "assessments"
 
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
 PROMPTS_CURRENT_DIR = PROMPTS_DIR / "current"
@@ -27,7 +28,8 @@ PROMPTS_HISTORY_DIR = PROMPTS_DIR / "history"
 # Ensure all data directories exist
 for d in [REPORT_INPUTS_DIR, FS_LEARNING_INPUTS_DIR, REPORT_OUTPUT_DIR,
           AUDIT_LLM_INPUT_DIR, AUDIT_LLM_OUTPUT_DIR, EVAL_INPUT_DIR,
-          EVAL_OUTPUT_DIR, CONVERTED_REPORTS_DIR, PROMPTS_HISTORY_DIR]:
+          EVAL_OUTPUT_DIR, CONVERTED_REPORTS_DIR, ASSESSMENTS_DIR,
+          PROMPTS_HISTORY_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
 # --- API Keys ---
@@ -37,10 +39,10 @@ FIRECRAWL_API_KEY = os.getenv("FIRECRAWL_API_KEY", "")
 
 # --- Model Configuration ---
 MODELS = {
-    "report_generation": "gemini-2.5-pro",
-    "audit_review": "gemini-2.5-flash-preview-04-17-thinking",
-    "comparison": "gemini-2.5-flash-preview-05-20",
-    "business_description": "gemini-2.5-flash-preview-05-20",
+    "report_generation": "gemini-2.5-flash",
+    "audit_review": "gemini-2.5-flash",
+    "comparison": "gemini-2.5-flash",
+    "business_description": "gemini-2.5-flash",
 }
 
 # --- Prompt File Names ---
@@ -57,4 +59,4 @@ GEMINI_UPLOAD_DELAY = 20
 GEMINI_FILE_TIMEOUT = 300
 FIRECRAWL_POLL_INTERVAL = 10
 FIRECRAWL_POLL_MAX_ATTEMPTS = 18
-SUPPORTED_PARSE_EXTENSIONS = [".xlsx"]
+SUPPORTED_PARSE_EXTENSIONS = [".xlsx", ".xlsm"]

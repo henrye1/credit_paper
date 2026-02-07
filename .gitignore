@@ -39,6 +39,7 @@ data/audit_llm_output/
 data/converted_reports/
 data/eval_output/
 data/report_output/
+data/assessments/
 
 # Logs
 *.log

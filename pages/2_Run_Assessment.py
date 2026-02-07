@@ -23,8 +23,8 @@ st.subheader("1. Input Files")
 col_upload1, col_upload2 = st.columns(2)
 
 with col_upload1:
-    st.markdown("**Financial Ratio File (.xlsx)**")
-    ratio_file = st.file_uploader("Upload Excel ratio file", type=["xlsx"],
+    st.markdown("**Financial Ratio File (.xlsx / .xlsm)**")
+    ratio_file = st.file_uploader("Upload Excel ratio file", type=["xlsx", "xlsm"],
                                    key="ratio_upload")
     if ratio_file:
         dest = REPORT_INPUTS_DIR / ratio_file.name
@@ -89,12 +89,13 @@ with col_cfg1:
 
 with col_cfg2:
     model_report = st.selectbox("Report Model", [
-        "gemini-2.5-pro",
-        "gemini-2.5-flash-preview-05-20",
+        "gemini-2.5-flash",
+        "gemini-2.5-pro (requires billing)",
     ], index=0)
+    if model_report.startswith("gemini-2.5-pro"):
+        model_report = "gemini-2.5-pro"
     model_audit = st.selectbox("Audit Model", [
-        "gemini-2.5-flash-preview-04-17-thinking",
-        "gemini-2.5-flash-preview-05-20",
+        "gemini-2.5-flash",
     ], index=0)
 
 # Show few-shot examples
