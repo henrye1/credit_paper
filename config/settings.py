@@ -43,6 +43,7 @@ MODELS = {
     "audit_review": "gemini-2.5-flash",
     "comparison": "gemini-2.5-flash",
     "business_description": "gemini-2.5-flash",
+    "section_edit": "gemini-2.5-flash",
 }
 
 # --- Prompt File Names ---

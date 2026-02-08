@@ -43,3 +43,7 @@ data/assessments/
 
 # Logs
 *.log
+
+# Frontend Build
+frontend/node_modules/
+frontend/dist/
