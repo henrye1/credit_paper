@@ -1,0 +1,410 @@
+metadata:
+  name: financial_health_diagnostics
+  description: >
+    Financial Health Diagnostics Guide outlining key diagnostic areas and quantitative/qualitative
+    metrics derived from financial statements to analyze a company's financial health. Covers balance
+    sheet analysis, net worth, financial sustainability, working capital, liquidity, financial
+    performance, profitability, business activity, and overall analytical principles for report generation.
+
+sections:
+  general_principles:
+    title: "General Principles for Analysis"
+    description: "Foundational analytical principles to be applied throughout all financial health diagnostics, covering contextualization, qualitative overlay, data utilization, related-party evaluation, earnings quality, cash flow prioritization, dividend analysis, nuance in conclusions, and ratio consistency."
+    content: |
+      **Financial Health Diagnostics Guide**
+
+      **This guide outlines key diagnostic areas and quantitative/qualitative metrics derived from financial statements to help you analyze a company's financial health. [Source: 330] The focus is on utilizing the balance sheet, income statement, cash flow statement (or its calculation), and statement of changes in equity, along with accompanying notes or ratio summaries, and integrating relevant qualitative information, including recent unaudited management accounts when provided.**
+
+      **General Principles for Analysis (To be applied throughout):**
+
+      * **Understand the "Why" : Beyond calculating ratios, strive to understand the underlying business reasons for financial trends and figures.**
+      * **Connect quantitative findings to operational realities, company strategy, and market conditions.**
+      * **Contextualize Findings : Interpret data in the context of the company's industry (e.g., service, manufacturing, non-profit, construction, tech), size, operational model, and the broader economic environment.**
+      * **Note the impact of significant external events (e.g., COVID-19, regulatory changes, specific market shocks, geopolitical events affecting supply chains).**
+      * **Qualitative Overlay & Depth : Supplement quantitative analysis with qualitative insights.**
+        + **Company Background & Strategy (Especially for Overview Sections) : Incorporate detailed operational history (including founding, key evolutionary milestones, leadership changes, and changes in ownership like major acquisitions/listings/delistings), significant strategic shifts (e.g., expansion into new markets/services, notable projects like an international exhibition), and the company's market position and competitive advantages. [NEW ADDITION START] Additionally, identify and note any significant direct shareholding by key management personnel. Such ownership can be a strong indicator of aligned incentives with other shareholders and can play a crucial role in talent retention for key executives. [NEW ADDITION END]**
+        + **NEW : When available, prioritize official company documents (e.g., annual reports, official website "About Us" sections) for company descriptions over generic web searches to ensure accuracy and appropriate emphasis.**
+        + **Operational Context : Include key partnerships, significant certifications (especially if critical for market access or indicative of expertise), BBBEE status (if relevant to market access/perception).**
+        + **Industry & Market Dynamics : Integrate relevant industry trends (e.g., technological disruption, changing customer demands, specific growth drivers like increased safety awareness, or current geopolitical impacts on logistics/shipping).**
+      * **Utilization of All Provided Data : The SARB provides all inputs, and all inputs must be used in the assessment.**
+      * **This includes Annual Financial Statements (AFS), supplementary data extracts, and more recent unaudited management accounts .**
+      * **While AFS remain the primary source for audited historical trends, management accounts must be incorporated to provide the most current view of performance and position, with clear notation of their unaudited status and any material deviations or trends they indicate.**
+      * **Critical Evaluation of Related-Party Transactions: Mandatory. If material related-party balances (loans, receivables, payables) or transactions (management fees, significant sales/purchases to/from related entities) exist, these MUST be explicitly identified, quantified, and their impact on the standalone entity's financial position (including adjusted tangible net worth), performance (including quality of earnings), and risk profile thoroughly analyzed.**
+      * **NEW : Quantification should include their impact on key summary metrics if material (e.g., as a percentage of total assets or equity, and potentially their combined total summarized in the Key Ratio Summary section if they represent a significant concentration of value or risk).**
+      * **Assess terms, commercial rationale, and potential for contagion or support.**
+      * **Consider Analytical Adjustments: Evaluate if reclassifying certain intercompany balances (e.g., long-term loans to group companies that are operationally liquid for the group, or short-term group liabilities funded by long-term group assets) or netting offsetting intercompany assets and liabilities is justified to better reflect economic substance for ratio analysis (e.g., current ratio, leverage).**
+      * **Clearly document any such reclassifications or nettings and their rationale.**
+      * **Note any lack of auditor commentary on recoverability/terms and apply professional skepticism.**
+      * **Assess Quality of Earnings : Do not take reported profits at face value.**
+      * **Investigate the sustainability and operational relevance of all significant income and expense components.**
+      * **Identify and quantify the impact of non-recurring items or volatile "Other Income."**
+      * **When analyzing Net Profit and related margins (e.g., Net Profit Margin), clearly define the specific profit figure being used (e.g., "Net Income After Tax for the consolidated group before NCI" versus "Net Profit After Tax Attributable to Parent Equity Holders").**
+      * **If summary data provides multiple profit lines, or if full AFS provides a more precise figure for shareholder returns, prioritize the figure most relevant to the specific analytical point being made and ensure consistent application for trend analysis.**
+      * **Generally, for assessing returns to the parent company's shareholders, Net Profit Attributable to Parent Equity Holders is preferred.**
+      * **If assessing the overall operational profitability of the consolidated group before any NCI distribution, the pre-NCI figure might be used, but this distinction and its impact on trends must be explicitly stated.**
+      * **Be precise about how one-off adjustments (e.g., prior period tax issues resulting in a balance sheet/equity adjustment) are classified and their distinct impact (e.g., on equity/cash flow versus current period operating margins).**
+      * **Cash Flow Analysis Prioritization :**
+        + **Prioritize AFS Data for Audited Periods : If a full Audited Financial Statement (AFS) including a Cash Flow Statement is available, figures from it (especially for Cash Flow from Operations - CFO) MUST be prioritized over calculations from summary data for those audited periods .**
+        + **NEW : This applies to both narrative analysis and inclusion in summary tables like "Financial Highlights," even if model input files omit it or state "Not Available."**
+        + **Incorporate Management Accounts for Recent Unaudited Periods : If unaudited management accounts provide more recent cash flow information (either a full statement or data allowing for CFO calculation), this information must be incorporated to reflect the latest trends.**
+        + **Clearly state the source is unaudited management accounts and highlight any significant deviations from audited historical trends.**
+        + **Calculations as a Secondary Approach : If a full Cash Flow Statement is unavailable for any period (audited or unaudited), CFO may need to be calculated (e.g., using the indirect method from Income Statement and Balance Sheet changes).**
+        + **Clearly state this methodology and acknowledge its limitations.**
+        + **Reconcile and Explain : If AFS-stated CFO (for audited periods) or management account CFO (for recent periods) differs significantly from a previously calculated CFO, or if qualitative statements about cash generation contradict quantitative findings, these discrepancies must be investigated, reconciled if possible, and explained.**
+        + **Integrate CFO into Narrative : Beyond presenting CFO as a standalone metric, actively use AFS-stated, management account-derived, or robustly calculated CFO figures within the narrative to support and explain assessments of liquidity, working capital management, debt service capacity, and overall financial sustainability.**
+        + **Quantify the CFO and its trend where relevant, noting the source (AFS or management accounts).**
+      * **Dividend Analysis :**
+        + **Prioritize AFS Data : Figures for dividends paid should ideally be sourced from the Statement of Changes in Equity or notes to the AFS for audited periods.**
+        + **Calculation and Context : If calculated (e.g., from retained earnings changes and PAT), state the method and limitations.**
+        + **Consider information from management accounts if it indicates recent dividend payments not yet reflected in AFS.**
+        + **Assess the prudence of dividend payments in the context of reported/calculated CFO (from AFS or management accounts), profitability (preferably PAT attributable to parent shareholders), and overall liquidity.**
+        + **Large dividends paid from weak CFO or strained liquidity are a concern.**
+      * **Nuance and Substantiation in Conclusions :**
+        + **Overall conclusions (e.g., "strong," "weak," "acceptable") must be directly and clearly substantiated by the preceding analysis of specific financial aspects and ratios, including qualitative considerations, insights from all provided data (AFS and management accounts) , and any analytical adjustments made.**
+        + **Balanced Ratings : When rating aspects of financial health (e.g., financial performance, specific ratio sets), use nuanced phrasing if the situation is mixed (e.g., "acceptable, albeit with pressure on margins," or "strong liquidity, though working capital cycle has lengthened").**
+        + **Avoid overly stark "weak" or "strong" ratings if mitigating factors or specific pressures warrant a more balanced view.**
+        + **Clearly explain the rationale for the rating, linking it back to specific observations and any mitigating factors (e.g., "While the current ratio based on AFS is low, recent management accounts indicate an improving trend, and this is mitigated by strong operational cash flow and significant undrawn facilities.").**
+        + **Distinguish Performance Drivers : When concluding on performance, clearly distinguish if the rating is based purely on the Profit & Loss for the period (noting if this is from AFS or more recent management accounts) versus a more holistic view that incorporates balance sheet strengths, cash flow generation, or other mitigating factors.**
+        + **Avoid overstating strength if significant unmitigated risks, unanalyzed material items, or reliance on non-core activities exist.**
+      * **Clarity on Dependencies & Caveats (Especially for Final Conclusion) : Clearly state any limitations or dependencies (e.g., reliance on continued group support, limitations of CFO calculation if full AFS is unavailable, or reliance on unaudited management accounts for recent performance assessments ).**
+      * **For regulatory bodies (e.g., SARB), conclusions must adopt a conservative, forward-looking risk perspective.**
+      * **If solvency, liquidity, or the ability to meet commitments is critically dependent on uncertain future events (e.g., sustained profitability after a period of weakness based on unaudited data, continued recoverability of risky related-party assets, reliance on unprovided future financial results), the conclusion must be conditional and reflect this uncertainty (e.g., 'may not have the ability if X is not achieved' or 'has the ability to meet commitments, provided that Y improvements shown in management accounts are realized in audited results and sustained').**
+      * **A single period of strong recovery shown in management accounts may not be sufficient to override significant underlying structural weaknesses or dependencies from audited history in such a conclusion without appropriate caveats.**
+      * **Consistency in Ratio Data and Interpretation :**
+        + **Ensure internal consistency in ratio figures and their interpretation between the main narrative, any appendices, and source data (e.g., model output vs. AFS figures vs. management account derived figures ).**
+        + **NEW : If pre-calculated ratios are provided in input summary data (e.g., model outputs), these should generally be used for tables intended to reflect that summary data (e.g., Financial Highlights table in 4.1, Appendix tables).**
+        + **However, for the narrative analysis within sections, ratios should be independently verified or recalculated from primary AFS data if possible for audited periods, and clearly indicated if derived from management accounts for recent periods.**
+        + **Any significant discrepancies between summary input ratios and AFS/management account-derived ratios used in the narrative must be noted and explained (e.g., "The model output D/E ratio of X% is used in Table Y; however, for this narrative, D/E calculated directly from AFS is Z% due to...").**
+        + **Critically evaluate and attempt to reconcile counterintuitive movements or discrepancies in related ratios.**
+        + **NEW : When encountering apparent errors or inconsistencies in provided summary data, these should be flagged.**
+        + **If AFS or management account data allows for correction or a more reasonable interpretation for the narrative, prioritize these figures while noting the original data issue.**
+        + **Prioritize AFS data for calculations for audited periods. If using model outputs or estimations, or figures from management accounts, clearly state the source and acknowledge if it differs from a direct AFS calculation or audited figures.**
+
+  asset_liability_structure:
+    title: "1. Asset/Liability Structure & Financial Position"
+    description: "Balance sheet analysis covering composition of assets and liabilities, financial position metrics, key ratios including debt-to-equity and current ratio, changes over time, and causes for changes in the financial structure."
+    content: |
+      **1. Asset/Liability Structure & Financial Position (Balance Sheet Analysis) Objective: To understand the composition of what a company owns (assets) and owes (liabilities), how it is funded, and to critically assess the quality and risk inherent in the balance sheet, considering both historical AFS and recent management accounts. Relevant Diagnostics to Examine (apply to both AFS and management account balance sheets where available, noting differences):**
+
+      * **Composition Analysis (typically presented as percentages of relevant totals):**
+        + **Proportion of Non-Current Assets versus Current Assets relative to Total Assets.**
+        + **Note if assets are predominantly current and liquid, or if the business is capital intensive (high PPE).**
+        + **Breakdown of Current Assets, noting significant components like:**
+          - **Cash, Marketable securities/Short-term investments.**
+          - **Explicitly compare cash levels to current liabilities and operational needs.**
+          - **Trade Receivables: Analyze ageing, concentration.**
+          - **Crucially, identify, quantify, and assess the nature, terms, and recoverability of amounts due from holding companies, subsidiaries, or other related parties.**
+          - **MODIFIED : When referring to 'loans to group companies' or similar related-party receivables/investments, clearly distinguish between actual loans (with a debtor-creditor relationship and defined repayment expectations) and equity investments (e.g., 'Investment in Associate', 'Investment in Subsidiary').**
+          - **If a summary term from source data is used, ensure the underlying nature of the items is clarified based on detailed AFS analysis.**
+          - **Consider their impact on overall asset quality, liquidity, and effective capitalization. Note retention receivables if applicable.**
+          - **Inventory: Note unique types (e.g., art on consignment). Assess risk of obsolescence if inventory days are high or if inventory constitutes a very large portion of current assets without clear justification.**
+          - **Note Work in Progress (WIP) or Contract Assets if material, and their valuation basis.**
+          - **Material Deposits Paid as a percentage of Total Current Assets or Total Assets.**
+          - **For associations, note Levies Receivable and their collectability.**
+        + **Breakdown of Non-Current Assets, noting significance of:**
+          - **Property, Plant & Equipment (PPE), including Right-of-Use Assets.**
+          - **Intangible Assets: Note types (e.g., Goodwill from acquisitions, product development, patents).**
+          - **Assess if their value is appropriately supported by future economic benefits, especially if they form a large part of the asset base.**
+          - **Consider their impact on tangible net worth.**
+          - **Investment Property.**
+          - **Investments in and Loans to/from Subsidiaries/Related Parties: Identify, quantify, and assess the nature, terms (interest-bearing, repayment schedule), purpose, and recoverability/repayment capacity of these items.**
+          - **These can significantly distort a standalone entity's true financial position and net worth.**
+          - **Consider calculating an adjusted tangible net worth excluding material, potentially impaired, related-party receivables/loans and goodwill/intangibles of uncertain value.**
+          - **Presence and carrying value of Derivative Financial Instruments (e.g., interest rate swaps) or Financial Assets Designated at Fair Value Through Profit or Loss as assets or liabilities.**
+          - **For Financial Institutions, identify significant classes of financial assets like Loans and advances to customers and Investment securities, and financial liabilities like Deposits from customers.**
+        + **Proportion of Non-Current Liabilities versus Current Liabilities versus Equity, relative to Total Liabilities & Equity.**
+        + **Breakdown of Current Liabilities, noting significant components like:**
+          - **Trade Payables, Accruals (e.g., for bonuses, specific operational expenses).**
+          - **Tax Payable.**
+          - **Unearned Revenue / Contract Liabilities (deferred revenue/fees received in advance, including for software/subscriptions, or for long-term contracts).**
+          - **Amounts due to artists (consignment stock creditors) if applicable, retention payables.**
+          - **The current portion of long-term debt.**
+          - **Significance of Put Option Liabilities (e.g., related to BEE transactions or acquisitions) within non-current or current liabilities.**
+        + **Breakdown of Debt:**
+          - **Interest-bearing versus non-interest-bearing debt (note if Preference Shares are classified as debt).**
+          - **Shareholder loans or related party/group company loans versus external debt: Note their classification as current or non-current.**
+          - **Crucially, investigate if subordination is mentioned in notes (especially in cases of negative equity, or if there's reliance due to limited external funding access for smaller entities).**
+          - **Assess if terms are at arm's length. Consider the impact on true external leverage.**
+          - **Note if term loans are stated net of unamortised transaction costs.**
+          - **Secured versus unsecured debt (if discernible from statement notes).**
+          - **Specific debt types like instalment sale agreements, vehicle finance, trade finance facilities, finance lease liabilities, and impact of Factoring Facilities.**
+          - **Short-term versus long-term portions of debt (note any reclassifications based on covenant compliance, accounting interpretations, or refinancing activities).**
+      * **Position (Absolute Values from Balance Sheet):**
+        + **Absolute monetary value of Total Assets, Non-Current Assets, Current Assets.**
+        + **Absolute monetary value of Total Liabilities, Non-Current Liabilities (including lease liabilities), Current Liabilities, and Total Debt (including bank overdrafts).**
+        + **Note if the company has no, or very low, external interest-bearing debt.**
+        + **For branches of foreign entities, note the value of Branch Capital.**
+      * **Ratios (typically provided in an assessment):**
+        + **Debt-to-Equity Ratio.**
+        + **Consider calculating this both with and without significant shareholder/related-party loans, and after any justified intercompany netting, to understand external leverage.**
+        + **Gearing Ratio. Similarly, consider variations based on the nature of debt included and any justified intercompany netting.**
+        + **Total Assets to Total Liabilities Ratio.**
+        + **Current Ratio. Consider calculating an adjusted Current Ratio if material intercompany balances distort the as-presented figure (e.g., reclassifying a demonstrably liquid long-term loan to a group company as current for analytical purposes, or netting specific current intercompany assets and liabilities if economically justified).**
+        + **Document rationale. When CR/QR are low, explicitly discuss mitigating factors such as strong CFO, undrawn facilities, or efficient receivables if applicable.**
+        + **Quick Ratio (Acid Test). Similar considerations for adjustments as the Current Ratio.**
+        + **Net Debt (Total Debt - Cash) or Net Cash Positive position.**
+        + **Consider an adjusted Net Debt/Cash position after justified netting of intercompany loans if this provides a more accurate picture of the group's consolidated or the entity's effective position.**
+        + **For entities in regulated industries, relevant Regulatory Capital Ratios.**
+      * **Changes Over Time :**
+        + **Track trends in asset, liability, and debt compositions (using AFS and management accounts where available).**
+        + **Observe trends in key capitalization ratios.**
+      * **Causes for Changes (Inferred from Financial Statement Movements and notes):**
+        + **Identify if an increase in debt coincides with asset purchases, increased working capital, loss funding, or refinancing of existing debt.**
+        + **Note if equity base changes are primarily due to retained profits, share issues, dividend payments, or losses.**
+        + **MODIFIED : Analyze the cumulative impact over several periods if data allows, especially regarding the impact of sustained dividend payments versus profit retention on equity growth.**
+        + **Explicitly discuss the impact of significant dividend payments on the equity structure and overall financial position within this section (4.2.1) if material to understanding changes in asset/liability structure, in addition to discussion in the Net Worth section.**
+        + **Observe if liability changes are due to equity injections, debt movements, or inter-company loan balance changes.**
+        + **Impact of revaluation of assets (if disclosed) on asset base and equity.**
+
+  net_worth_equity:
+    title: "2. Net Worth (Equity)"
+    description: "Assessment of the owners' stake in the company, including equity trends, quality of equity, tangible net worth calculations, and the impact of intangible assets, related-party loans, and dividend payments on equity."
+    content: |
+      **2. Net Worth (Equity) Objective: To assess the value of the owners' stake in the company, its trend, the quality of the equity, and the financial statement items supporting it, considering both AFS and recent management accounts. Relevant Diagnostics to Examine (apply to both AFS and management account equity figures where available, noting differences and drivers like recent profits/losses from management accounts):**
+
+      * **Position (Absolute Value from Balance Sheet):**
+        + **Absolute monetary value of Total Equity (Net Worth);**
+        + **note if negative.**
+        + **Note impact of significant accumulated losses.**
+        + **Assess if the equity base is very small relative to total assets, debt levels, or operational scale.**
+      * **Changes Over Time :**
+        + **Absolute and percentage change in Total Equity (track based on AFS and management accounts).**
+      * **Causes for Changes (Identified from Financial Statement Movements):**
+        + **Impact of Net Income (or Surplus/Deficit for NPOs) on Retained Earnings/Accumulated Funds (from AFS or management accounts).**
+        + **Impact of Dividend Payments on Retained Earnings.**
+        + **Prioritize AFS Data : If available, use dividend figures from the Statement of Changes in Equity or AFS notes for audited periods.**
+        + **Calculation and Context : If not explicitly stated, dividend payments can often be inferred using the formula: Dividends Paid = Net Profit After Tax - (Ending Retained Earnings - Beginning Retained Earnings - Other Direct Adjustments to Retained Earnings e.g., prior year adjustments, transfers to/from other reserves).**
+        + **Consider information from management accounts if it indicates recent dividend payments not yet reflected in AFS.**
+        + **Analyze dividend payout ratios in relation to profits and cash flow (especially CFO from AFS or robustly calculated from AFS/management accounts) to assess sustainability and impact on internal equity generation.**
+        + **Note significant dividend payments and their effect on the net worth and liquidity position, particularly if equity has decreased or cash reserves are strained.**
+        + **If a large dividend is reported (e.g., in AFS notes or reliable sources) and it significantly impacts equity or stated CFO, this must be a key point of analysis.**
+        + **NEW : If data permits, analyze and comment on the cumulative impact of dividends over multiple recent periods (e.g., 3 years) in relation to cumulative profits to provide context on wealth distribution versus retention for growth.**
+        + **Effect of share capital injections or purchase/buyback of treasury shares.**
+        + **Impact of significant losses eroding retained earnings.**
+        + **Effect of material asset write-offs on equity.**
+        + **Impact of prior year adjustments (e.g., to retained income) or changes in other reserves (e.g., from common control transactions, transactions with non-controlling interests, or share-based compensation expense if flowing through OCI or directly impacting retained earnings).**
+      * **Composition & Quality (from Balance Sheet and notes, using latest available data):**
+        + **Identify the presence and value of Intangible Assets (Goodwill, other).**
+        + **Calculate Tangible Net Worth (Net Worth - Intangible Assets). Emphasize the need to assess the quality of net worth by considering the proportion of intangible assets and the entity's capacity to absorb potential impairments, especially in stress scenarios.**
+        + **Assess if net worth is dependent on the recoverability of significant loans to related parties or large deferred tax assets.**
+        + **Consider calculating an "Adjusted Tangible Net Worth" by further deducting material, potentially unrecoverable related-party loans/receivables of uncertain value.**
+        + **NEW: This adjusted figure, and the key items deducted (e.g., goodwill, material related-party receivables of uncertain value, significant intangibles lacking clear earnings support), should be discussed both in this detailed Net Worth section (4.2.2) and potentially summarized if highly material in the overall Financial Position Analysis (4.2.1) or Key Ratio Summary (4.6.1), to provide a clear view of equity quality.**
+        + **Note if the business model inherently requires a less substantial equity base (e.g., service companies).**
+        + **For Non-Profit Organisations: note composition of reserves, including Funds designated for specific projects / Restricted funds.**
+
+  financial_sustainability:
+    title: "3. Financial Sustainability"
+    description: "Assessment of the company's ability to maintain operations and meet financial obligations based on reported financial performance, structure, quality of earnings, and assets from both AFS and management accounts."
+    content: |
+      **3. Financial Sustainability Objective: To determine the company's apparent ability to maintain its operations and meet its financial obligations based on its reported financial performance (from AFS and recent management accounts), structure, and the quality of its earnings and assets. Relevant Diagnostics to Examine (apply to both AFS and management account data where available):**
+
+      * **Ratios (typically provided in an assessment, or calculated, specifying if from AFS or management accounts):**
+        + **Net Profit Margin (or Surplus/Deficit as % of Revenue for NPOs) (and its trend).**
+        + **Analyze the components driving this margin – is it from core operations or significantly influenced by "Other Income"?**
+        + **Ensure clarity on the PAT figure used for NPM (e.g., PAT attributable to parent vs. NIAT before NCI) and maintain consistency, especially when comparing trends.**
+        + **Justify the choice if multiple figures are available.**
+        + **Debt-to-Equity Ratio (consider variations based on debt type – external vs. related party, and after any justified intercompany netting/adjustments).**
+        + **Gearing Ratio (consider after any justified intercompany netting/adjustments).**
+        + **Interest Coverage Ratio.**
+        + **Book Value of Equity / Total Liabilities.**
+        + **For Financial Institutions: Credit Loss Ratio.**
+        + **For entities in regulated industries: Adherence to Regulatory Capital Ratios.**
+      * **Changes Over Time :**
+        + **Trend in earnings (Net Profit, EBIT, EBITDA, or Surplus/Deficit) from core operations (using AFS and recent management accounts).**
+        + **Trend in the (adjusted tangible) equity base.**
+        + **Observe trends in leverage and coverage ratios.**
+      * **Causes for Changes (Inferred from Financial Statement Movements and notes, considering AFS and latest trends from management accounts):**
+        + **Examine if changes in cost structure (including specific operational cost drivers like BEE transaction costs, provisions for expected credit losses, high R&D expenditure and its link to future growth for tech companies) are impacting profitability and sustainability, considering latest trends from management accounts.**
+        + **Assess if profitability is reliant on, or significantly impacted by, exceptional or non-recurring gains/losses (e.g., bad debt recovery, significant movements in exceptional losses/gains affecting EBIT or PBT) or volatile/non-core "Other Income" (e.g., management fees from related parties not clearly at arm's length, one-off sundry items).**
+        + **Note if debt-funded asset acquisitions or refinancing activities are impacting leverage and future sustainability.**
+        + **Impact of high, volatile, or increasing finance costs.**
+        + **Impact of deferred tax charges or credits (and the likelihood of realizing deferred tax assets).**
+        + **Cumulative negative cash flow from operations over multiple years (based on AFS-stated or robustly calculated CFO).**
+        + **Reliance on shareholder support (assess nature, terms, and reliability of this support).**
+        + **Note the impact of IFRS 16 on lease accounting.**
+        + **Contextualize revenue and profitability trends with external factors (e.g., COVID-19 impact, specific market conditions, industry demand drivers).**
+
+  working_capital:
+    title: "4. Working Capital"
+    description: "Evaluation of the company's short-term operational liquidity and efficiency in managing its operating cycle components, including cash conversion cycle analysis, inventory days, receivables days, and payables days."
+    content: |
+      **4. Working Capital Objective: To evaluate the company's short-term operational liquidity and efficiency in managing its operating cycle components, using the most recent available data (AFS or management accounts). Relevant Diagnostics to Examine (apply to latest available data, noting source, and integrate the principle of considering justified intercompany adjustments when evaluating ratios like the Current Ratio. Emphasize consistency in calculating and interpreting CCC and its components, using AFS data for audited periods and management accounts for recent data. Investigate and explain counterintuitive movements or discrepancies between related metrics):**
+
+      * **Position (Absolute Values from Balance Sheet – latest available):**
+        + **Net Working Capital (Current Assets - Current Liabilities).**
+        + **Key components: Cash, Trade Receivables, Inventory, Trade Payables.**
+      * **Ratios (Calculated from latest available data):**
+        + **Current Ratio.**
+        + **Quick Ratio (Acid Test).**
+        + **Cash Conversion Cycle (CCC) = Inventory Days + Receivables Days - Payables Days.**
+        + **Inventory Days (Average Inventory / COGS x 365).**
+        + **Receivables Days (Average Trade Receivables / Revenue x 365).**
+        + **Payables Days (Average Trade Payables / COGS x 365).**
+      * **Changes Over Time :**
+        + **Trend in Net Working Capital.**
+        + **Trends in Current and Quick Ratios.**
+        + **Trends in CCC and its components.**
+      * **Causes for Changes :**
+        + **Analyze how changes in sales, purchasing, production, credit policies (for sales and purchases) affect working capital components.**
+        + **Impact of inventory management practices (e.g., JIT, bulk purchasing).**
+        + **Effect of specific industry payment cycles or seasonality.**
+
+  liquidity:
+    title: "5. Liquidity"
+    description: "Assessment of the company's ability to meet immediate and short-term financial obligations using its most liquid assets, including cash flow analysis, reconciliation of qualitative statements with quantitative data, and coverage analysis."
+    content: |
+      **5. Liquidity Objective: To assess the company's ability to meet its immediate and short-term financial obligations using its most liquid assets, based on the latest available data (AFS or management accounts). Relevant Diagnostics to Examine (using latest CFO from AFS or management accounts, and incorporating principles outlined under "Cash Flow Analysis Prioritization" and "Critical Evaluation of Related-Party Transactions"):**
+
+      * **Position (Absolute Values from Balance Sheet – latest available):**
+        + **Cash and Cash Equivalents.**
+        + **Marketable Securities (if readily convertible).**
+        + **Compare to short-term obligations (e.g., current portion of debt, trade payables).**
+      * **Ratios (Calculated from latest available data):**
+        + **Current Ratio.**
+        + **Quick Ratio (Acid Test).**
+        + **Cash Ratio (Cash + Marketable Securities / Current Liabilities).**
+      * **Coverage :**
+        + **Availability of committed, undrawn credit facilities or overdrafts.**
+      * **Changes Over Time :**
+        + **Trend in cash balances.**
+        + **Trends in liquidity ratios.**
+        + **Changes in reliance on short-term financing.**
+      * **Causes for Changes :**
+        + **Impact of operational cash generation (CFO – from AFS or management accounts).**
+        + **Effect of investing activities (e.g., large capex, asset sales).**
+        + **Effect of financing activities (e.g., debt repayment/drawdown, equity issuance, dividend payments).**
+        + **Major unexpected cash outflows or inflows.**
+      * **Reconcile Qualitative Statements with Quantitative Data :**
+        + **Critically evaluate any qualitative statements within source documents or management commentary regarding cash generation (e.g., "the company is cash generative").**
+        + **Compare such statements directly against the AFS-stated CFO (for audited periods) or CFO derived from recent management accounts .**
+        + **If there is a contradiction (e.g., a claim of being "cash generative" when CFO is negative or significantly declining), this discrepancy MUST be highlighted and investigated.**
+        + **The analysis should clarify whether the qualitative statement is unsupported or if there are specific, identifiable reasons (e.g., significant non-cash items not captured in a simplified CFO, or large discretionary payments like dividends impacting the reported CFO figure, necessitating an analysis of pre-dividend operational cash flow).**
+        + **Unsupported positive qualitative statements in the face of negative quantitative data should temper the liquidity assessment.**
+
+  financial_performance:
+    title: "6. Financial Performance"
+    description: "Overview of the company's financial achievements in revenue generation and profit derivation, focusing on core operations and sustainability, with trend analysis across AFS and management accounts."
+    content: |
+      **6. Financial Performance (Financial Results Overview) Objective: To understand the company's overall financial achievements in terms of revenue generation and profit derivation, focusing on core operations and sustainability, integrating trends from AFS and the most recent performance shown in management accounts. Relevant Diagnostics to Examine:**
+
+      * **Trend Analysis (Absolute and Percentage Changes over several periods, incorporating AFS and management accounts):**
+        + **Revenue (Turnover) Growth:**
+          - **Note drivers like specific project completions, loss/gain of key clients, changes in revenue mix (e.g., "Rendering of services" vs. "Sale of goods" or "Product revenue" vs. "Service/Subscription revenue"), revenue from tender-based contracts.**
+          - **Distinguish between revenue from core operations vs. e.g., dividends received, management fees (especially from related parties – assess if at arm's length and sustainable), rental income, fair value adjustments (investment holding co.), or Membership fees/Levies (NPOs).**
+          - **Contextualize revenue changes with market conditions, industry trends, and specific events (e.g., COVID-19 impact and recovery, and latest figures/trends from management accounts ).**
+          - **For Asset Managers: Trend in Assets Under Management (AUM) and its correlation with fee income.**
+        + **Cost of Goods Sold (COGS) Growth (note key components like subcontractor costs if detailed).**
+        + **Gross Profit Growth.**
+        + **Operating Expenses Growth (analyze key components if detailed, including specifying the most significant contributing sub-categories to material changes if data permits, such as BEE transaction costs, provisions for expected credit losses, impairment of loans to group companies/investment in subsidiaries, R&D expenses, project costs for NPOs, service fees paid to related parties).**
+        + **Analyze Operating Expenses to Turnover ratio trend.**
+        + **Operating Profit (EBIT) Growth.**
+        + **EBITDA Growth.**
+        + **Net Profit After Tax Growth (or Net Surplus/Deficit for NPOs).**
+        + **Be specific about which PAT figure is being tracked for trend analysis (pre-NCI or attributable to parent) and why, especially if this choice affects the perceived trend.**
+        + **NEW : Specify if 'Net Profit Margin' (NPM) or PAT figures used in tables (e.g. Financial Highlights) or narrative discussions refer to PAT before or after non-controlling interest (NCI), or PAT attributable to parent shareholders.**
+        + **Strive for consistency. If different NPM/PAT figures are used (e.g., one from a model output summary table and another calculated from AFS/management accounts for narrative), clarify the source and basis for each and explain any material differences.**
+        + **Profit/Loss from Discontinued Operations (distinguish from continuing operations).**
+        + **"Net income before exceptional items" as a performance measure.**
+      * **Causes for Changes (Inferred by comparing growth rates and margins of Income Statement line items and notes, analyzing if recent management accounts show a continuation, reversal, or new development in these trends ):**
+        + **If Revenue grows at a different rate than COGS, analyze impact on Gross Profit Margin.**
+        + **If Operating Expenses grow at a different rate than Gross Profit, analyze impact on Operating Profit/Net Profit Margin.**
+        + **Impact of significant changes in interest expense or tax rate on Net Profit.**
+        + **Identification of large "Other Income/Expense" (e.g., bad debt recovery, insurance claim income, or if "Other operating income" significantly boosts profit, identify its specific components, nature – core vs. non-core, recurring vs. one-off – and sustainability).**
+        + **Specifically note items like significant bad debt reversals or provisions, as these can materially distort the reported profit for a period and are typically non-recurring at that scale.**
+        + **Assess the underlying operational profit by considering the impact of such items.**
+        + **Identification of "Exceptional/Extraordinary Items" and their impact on underlying performance.**
+        + **Quantify these where possible and discuss the performance both including and excluding these items to understand the sustainable operational trends.**
+        + **This includes explicitly mentioning items like 'gain/loss on disposal of subsidiaries', 'impairment of investments', 'business acquisition costs', and 'net gain/loss on termination of leases' if they are material and reported separately or as part of a "remeasurement of financial liabilities and capital items" line.**
+        + **Impact of Impairment charges on financial assets (including related-party receivables).**
+        + **Impact of significant Foreign currency exchange rate fluctuations on reported results.**
+        + **Note if revenue recognition methods for long-term contracts (e.g., percentage of completion for construction/projects) or the specific nature of contracts (e.g., tender-based) are a factor in revenue trends, if disclosed.**
+
+  profitability:
+    title: "7. Profitability"
+    description: "Measurement of the company's ability to generate sustainable earnings relative to revenue, assets, equity, and capital employed, focusing on earnings quality using both AFS and management accounts."
+    content: |
+      **7. Profitability Objective: To measure the company's ability to generate sustainable earnings relative to its revenue, assets, equity, and capital employed, focusing on the quality of those earnings, using insights from both AFS and recent management accounts. Relevant Diagnostics to Examine:**
+
+      * **Ratios (Margins - from Income Statement data, specifying if AFS or management accounts) :**
+        + **Gross Profit Margin (note impact of revenue mix changes).**
+        + **Operating Profit Margin (EBIT Margin).**
+        + **EBITDA Margin.**
+        + **Net Profit Margin (or Net Surplus margin).**
+        + **Critically assess the sustainability of this margin by analyzing the contribution from core operations versus potentially volatile or non-recurring "Other Income" or exceptional items.**
+        + **Reiterate the need for clarity and consistency in the PAT figure used for NPM (preferably PAT attributable to parent shareholders, or clearly defined if pre-NCI).**
+      * **Ratios (Returns - using average balance sheet figures where appropriate if provided, from latest available data) :**
+        + **Return on Equity (ROE).**
+        + **Consider ROE on adjusted tangible net worth if appropriate.**
+        + **Return on Assets (ROA).**
+        + **Return on Capital Employed (ROCE) / Return on Invested Capital (ROIC).**
+      * **Changes Over Time :**
+        + **Track historical trends in all margin and return ratios, incorporating the latest data points from management accounts.**
+      * **Causes for Changes (Inferred from Financial Statement Movements, assessing if drivers identified in AFS periods persist or change based on management accounts ):**
+        + **Analyze how changes in specific expense categories relative to revenue have impacted different profit margins.**
+        + **When discussing drivers of margin changes, attempt to list the most significant contributing sub-categories of expenses if this data is available and material.**
+        + **Impact of changes in asset or capital base relative to profit generation.**
+        + **Note if industry context or specific operational issues (or efficiencies) are provided as impacting margins.**
+        + **Investigate drivers of significant changes in "Other Income" and its impact on overall profitability trends.**
+
+  business_activity:
+    title: "8. Business Activity (Turnover Ratios)"
+    description: "Evaluation of how effectively the company generates revenue from operations and manages related costs, integrating qualitative industry context and the latest turnover trends from management accounts."
+    content: |
+      **8. Business Activity (Turnover Ratios) Objective: To evaluate how effectively the company is generating revenue from its operations and managing related costs, and to integrate qualitative industry context, paying close attention to the latest turnover trends indicated by management accounts. Relevant Diagnostics to Examine:**
+
+      * **Changes Over Time (Growth - from Income Statement, AFS and management accounts) :**
+        + **Turnover/Revenue growth rate.**
+        + **Note drivers like loss/gain of key clients, completion of major projects without replacement, market expansion, or contraction.**
+        + **Contextualize with industry trends and external factors (e.g., post-COVID recovery, specific market opportunities like increased demand for safety systems after incidents, global supply chain disruptions, backlogs at ports, impact of regional conflicts on shipping routes, and most recent figures from management accounts ).**
+        + **NEW : When discussing the impact of external events like COVID-19, consider and mention the company's financial year-end if it influences how these impacts are reported across different calendar or financial periods, affecting comparability.**
+      * **Ratios (from Income Statement and Balance Sheet data, using latest available) :**
+        + **Revenue / Total Assets (Total Asset Turnover).**
+        + **Operating expenses / Turnover.**
+      * **Causes for Changes (Inferred from Financial Statement Movements and notes, noting if management accounts explain recent deviations or confirm ongoing trends ):**
+        + **Correlate changes in revenue with changes in the total asset base or specific asset categories (including WIP or Contract Assets for relevant businesses).**
+        + **Identify if specific external events or qualitative industry factors (e.g., increased regulatory requirements driving demand, technological advancements) are noted as affecting turnover.**
+        + **Compare the percentage change in Cost of Sales to the percentage change in Turnover.**
+        + **Link changes in the "Operating expenses / Turnover" ratio to operational efficiency or margin pressure.**
+
+  overall_analytical_principles:
+    title: "Overall Analytical Principles for Report Generation"
+    description: "Reiteration and emphasis of overarching analytical principles for generating financial health reports, including mandatory related-party analysis, profitability driver deep dives, qualitative integration, nuanced conclusions, conditional final conclusions, and AFS data prioritization with management account integration."
+    content: |
+      **Overall Analytical Principles for Report Generation (Reiteration & Emphasis) (Apply these principles considering all data sources including management accounts)**
+
+      * **Mandatory Analysis of Related-Party Transactions : If material related-party balances (loans, receivables, payables) or transactions (management fees, significant sales/purchases) exist, these MUST be explicitly identified, quantified (e.g., as a percentage of total assets, effect on current ratio if reclassified), and their impact on the standalone entity's financial position (including adjusted tangible net worth and adjusted current ratio), performance (including quality of earnings), and risk profile thoroughly analyzed.**
+      * **An adjusted net worth or leverage assessment, clearly distinguishing related-party elements, is often necessary.**
+      * **Consider if analytical adjustments, such as reclassification of intercompany balances for ratio calculations (e.g., reclassifying an intercompany loan from current to non-current if its short-term recoverability or terms are questionable, and prominently using this adjusted Current Ratio in the assessment) or netting of offsetting intercompany assets and liabilities for leverage assessment, are warranted to better reflect the economic substance of the entity's position.**
+      * **All such adjustments must be clearly documented with rationale. Note any lack of auditor commentary on recoverability and apply professional skepticism.**
+      * **The potential insolvency risk if a material related-party loan proves unrecoverable must be explicitly discussed, especially if it significantly impacts the company's liquidity or solvency.**
+      * **Deep Dive into Profitability Drivers : Beyond headline margins, analyze the composition of revenues and significant expense lines (based on AFS and details available in management accounts).**
+      * **If "Other Income" (such as non-guaranteed government subsidies/grants) is material or drives a significant portion of net profit, its components, recurrence (one-off vs. ongoing), and operational relevance (core vs. non-core) must be assessed to determine the true quality and sustainability of reported profits.**
+      * **Do not take these at face value. NEW (Guideline for AI & Human Analysis) : In cases where income sources like non-guaranteed government subsidies/grants significantly impact profit, the analysis should incorporate nuanced approaches like sensitivity or "what-if" scenarios (e.g., assessing the grant impact on PAT or key margins) to better evaluate underlying sustainable profitability.**
+      * **This is an area for potential enhancement in AI-driven report generation and a key consideration for human analysts.**
+      * **Integration of Qualitative and Contextual Understanding : Financial ratios and trends (from AFS and management accounts) must be interpreted within the broader context of the company's specific industry (e.g., construction, services, non-profit, low capital intensity of a fee-based business), its operational history (including founding, key evolutionary milestones, leadership changes), market conditions (e.g., post-COVID recovery period, specific industry events like the impact of building fires on demand for safety companies), competitive landscape, significant partnerships or unique events (like bad debt reversals, specific trust partnerships, number of professionals, key geographic presences if significant for operational scale) that materially affect interpretation, and known strategic initiatives (e.g., international expansion). Purely quantitative analysis without this context is insufficient and can lead to misinterpretation.**
+      * **Incorporate relevant historical financial events (e.g., large past dividends, significant capital restructuring) if they provide essential context for understanding the current financial position (e.g., origins of shareholder loans, current equity levels).**
+      * **Include relevant details like BBBEE status, certifications if they impact business operations or market perception.**
+      * **When discussing performance trends (revenue, profit), explicitly link them to known contextual factors like COVID-19 pandemic phases (differentiating impact across financial years based on company year-end), project cycle timings, or specific market conditions.**
+      * **Nuance and Substantiation in Conclusions (Re-emphasized for AI Alignment) :**
+        + **Overall conclusions (e.g., "strong," "weak," "acceptable") must be directly and clearly substantiated by the preceding analysis of specific financial aspects and ratios drawn from all provided data sources (AFS and management accounts).**
+        + **Use Nuanced Ratings : Instead of stark "weak" or "strong" ratings, employ more nuanced phrasing where the situation is mixed (e.g., "financial performance based on AFS was weak, but recent management accounts indicate a significant turnaround, rendering current performance outlook as improving but requiring audited confirmation," or "liquidity is strong, primarily due to substantial cash reserves, though the current ratio has seen a decline").**
+        + **This allows for a more balanced reflection of complex situations.**
+        + **Explain Ratings Holistically : When providing a rating for a specific aspect (e.g., "Financial Performance"), clarify if the rating is based purely on the P&L for the period (noting if this is from AFS or more recent management accounts), or if it incorporates mitigating/exacerbating factors from the balance sheet, cash flow, or qualitative context.**
+        + **For example, "While the profit for the audited FY23 declined, rendering the P&L performance for FY23 weak in isolation, recent unaudited management accounts for FY24 show a recovery; thus, the overall financial performance is considered potentially improving given the company's strong balance sheet and sustained operational cash generation which provide resilience."**
+        + **Critically evaluate if qualitative assertions made in the report (e.g., about cash generation, sustainability) are consistent with, and supported by, the quantitative findings (e.g., calculated CFO, profitability trends excluding one-offs).**
+        + **If using AFS-stated figures for CFO or dividends that differ significantly from figures one might calculate from summary P&L/BS data, prioritize AFS-stated figures (if available from full statements/notes) and acknowledge this basis.**
+        + **If discrepancies exist between external qualitative claims (e.g., in source documents) and your analytical findings (e.g., a company claims to be "cash generative" but reported/calculated CFO is weak), these must be addressed and reconciled or highlighted as a risk/concern.**
+        + **Avoid overstating strength if significant unmitigated risks (e.g., heavy dependence on a large, illiquid intercompany loan even with recent positive CFO), unanalyzed material items (like the aforementioned related-party concerns), or reliance on non-core activities exist.**
+      * **Conditional Final Conclusions : Clearly state any limitations or dependencies.**
+      * **For regulatory bodies (e.g., SARB), conclusions must adopt a conservative, forward-looking risk perspective.**
+      * **If solvency, liquidity, or the ability to meet commitments is critically dependent on uncertain future events (e.g., sustained profitability shown in unaudited management accounts after a period of weakness in AFS, successful cost management, continued recoverability of risky related-party assets), the final conclusion must be conditional and clearly articulate these dependencies and the unaudited nature of recent positive data (e.g., "The company appears to have the ability to meet its commitments, contingent upon the trends observed in recent unaudited management accounts being sustained and validated in future audited statements,").**
+      * **A single period of strong recovery in unaudited management accounts may not be sufficient to override significant underlying structural weaknesses from audited history without strong caveats regarding the unaudited nature and need for sustained, verified improvement.**
+      * **Prioritization of Audited Financial Statement (AFS) Data for Historical Baseline, Integration of Management Accounts for Current View :**
+        + **When available, figures directly from the audited Cash Flow Statement (for CFO) and Statement of Changes in Equity or notes (for dividends paid) should be prioritized for audited historical periods.**
+        + **Unaudited management accounts must be used to inform the most current assessment of performance and position , clearly identifying these figures as unaudited and noting any material differences from historical audited trends.**
+        + **If calculations are performed due to lack of detailed statements (either AFS or management accounts), this should be clearly stated along with the methodology and any potential limitations.**
+      * **NEW Principle/Guideline (can be added under General Principles or a new specific subsection):**
+      * **Summarizing Key Balance Sheet Exposures in Conclusions :**
+        + **In summary sections like the "Key Ratio Summary" (typically 4.6.1), explicitly mention and quantify material balance sheet exposures if they are critical to understanding the company's risk profile or the quality of its financial position, using the latest available data (AFS or management accounts, specifying source).**
+        + **For instance, if intangible assets combined with investments in and loans to related parties constitute a significant portion of total assets or are large relative to equity, this concentration should be highlighted (e.g., "Intangible assets and net related-party investments/receivables amount to X% of total equity as per latest management accounts, indicating significant value concentrated in these areas.").**
+        + **This summary point should link back to the detailed analysis performed in dedicated sections (e.g., Net Worth, Asset/Liability Structure, Related-Party Transactions).**

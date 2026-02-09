@@ -1,0 +1,51 @@
+# Environment Variables (CRITICAL - Never commit)
+.env
+.env.local
+.env.*.local
+
+# Python Cache & Build
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Streamlit Secrets
+.streamlit/secrets.toml
+
+# Data directories (working files & outputs)
+data/
+
+# Claude Code
+.claude/
+
+# Windows artifacts
+nul
+
+# Logs
+*.log
+
+# Frontend Build
+frontend/node_modules/
+frontend/dist/
