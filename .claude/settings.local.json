@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ren:*)",
+      "Bash(pip show:*)",
+      "Bash(findstr:*)",
+      "Bash(python:*)",
+      "Bash(\"c:\\\\Users\\\\APR\\\\OneDrive - Anchor Point Risk \\(Pty\\) Ltd\\\\Desktop\\\\VS_CODE_REPOSITORY\\\\credit_paper\\\\.venv\\\\Scripts\\\\python.exe\" --version)"
+    ]
+  }
+}
