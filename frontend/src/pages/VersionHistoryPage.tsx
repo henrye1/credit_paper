@@ -1,42 +1,75 @@
 import { useEffect, useState } from 'react'
-import type { PromptListItem } from '../types'
+import type { PromptListItem, PromptSet } from '../types'
+import { listPromptSets } from '../api/promptSets'
 
 export default function VersionHistoryPage() {
+  const [promptSets, setPromptSets] = useState<PromptSet[]>([])
+  const [activeSet, setActiveSet] = useState<string>('')
   const [prompts, setPrompts] = useState<PromptListItem[]>([])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
   const [versions, setVersions] = useState<{ timestamp: string; display_time: string }[]>([])
   const [viewingVersion, setViewingVersion] = useState<any>(null)
 
+  // Fetch prompt sets on mount
   useEffect(() => {
-    fetch('/api/prompts').then(r => r.json()).then(setPrompts).catch(() => {})
+    listPromptSets().then(sets => {
+      setPromptSets(sets)
+      const defaultSet = sets.find(s => s.is_default)
+      if (defaultSet) setActiveSet(defaultSet.slug)
+    }).catch(() => {})
   }, [])
 
+  // Fetch prompt list when set changes
   useEffect(() => {
-    if (!selectedPrompt) return
-    fetch(`/api/prompts/${selectedPrompt}/versions`)
+    if (!activeSet) return
+    fetch(`/api/prompts?set=${activeSet}`).then(r => r.json()).then(setPrompts).catch(() => {})
+    setSelectedPrompt(null)
+    setVersions([])
+    setViewingVersion(null)
+  }, [activeSet])
+
+  useEffect(() => {
+    if (!selectedPrompt || !activeSet) return
+    fetch(`/api/prompts/${selectedPrompt}/versions?set=${activeSet}`)
       .then(r => r.json())
       .then(setVersions)
       .catch(() => {})
-  }, [selectedPrompt])
+  }, [selectedPrompt, activeSet])
 
   const handleView = async (ts: string) => {
     if (!selectedPrompt) return
-    const data = await fetch(`/api/prompts/${selectedPrompt}/versions/${ts}`).then(r => r.json())
+    const data = await fetch(`/api/prompts/${selectedPrompt}/versions/${ts}?set=${activeSet}`).then(r => r.json())
     setViewingVersion(data)
   }
 
   const handleRevert = async (ts: string) => {
     if (!selectedPrompt) return
     if (!confirm('Revert to this version? A new version will be created.')) return
-    await fetch(`/api/prompts/${selectedPrompt}/revert/${ts}`, { method: 'POST' })
+    await fetch(`/api/prompts/${selectedPrompt}/revert/${ts}?set=${activeSet}`, { method: 'POST' })
     // Reload versions
-    const v = await fetch(`/api/prompts/${selectedPrompt}/versions`).then(r => r.json())
+    const v = await fetch(`/api/prompts/${selectedPrompt}/versions?set=${activeSet}`).then(r => r.json())
     setVersions(v)
   }
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Version History</h2>
+
+      {/* Prompt Set selector */}
+      <div className="mb-4">
+        <label className="block text-xs font-medium text-gray-500 mb-1">Prompt Set</label>
+        <select
+          value={activeSet}
+          onChange={(e) => setActiveSet(e.target.value)}
+          className="border border-gray-300 rounded-lg p-2.5 text-sm w-60"
+        >
+          {promptSets.map(s => (
+            <option key={s.slug} value={s.slug}>
+              {s.display_name}{s.is_default ? ' (default)' : ''}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <select
         value={selectedPrompt || ''}

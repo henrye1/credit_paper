@@ -30,6 +30,7 @@ async def start_assessment(
     model: str = Form("gemini-2.5-flash"),
     skip_biz_desc: bool = Form(False),
     report_name: str = Form(""),
+    prompt_set: str = Form(""),
 ):
     """Upload files and start the generation pipeline."""
     # Clean working directory
@@ -44,8 +45,11 @@ async def start_assessment(
         pdf_dest = work_dir / pdf.filename
         pdf_dest.write_bytes(await pdf.read())
 
-    # Create assessment
-    assessment_id = create_assessment(ratio_file.filename, model, skip_biz_desc, report_name)
+    # Create assessment (empty string → None so prompt_manager resolves default)
+    assessment_id = create_assessment(
+        ratio_file.filename, model, skip_biz_desc, report_name,
+        prompt_set=prompt_set or None,
+    )
 
     # Create log queue and start pipeline in background
     create_log_queue(assessment_id)
@@ -305,8 +309,8 @@ async def finalize_assessment(assessment_id: str):
         output_path = REPORT_OUTPUT_DIR / report_filename
         output_path.write_text(final_html, encoding="utf-8")
 
-    # Archive
-    result = archive_assessment(assessment_id)
+    # Archive with full provenance (original + final + metadata + changes)
+    result = archive_assessment(assessment_id, final_html=final_html)
 
     # Update state
     state["phase"] = "complete"

@@ -38,3 +38,12 @@ export interface PromptListItem {
   label: string
   section_count: number
 }
+
+export interface PromptSet {
+  slug: string
+  display_name: string
+  description: string
+  created_at: string | null
+  cloned_from: string | null
+  is_default: boolean
+}

@@ -81,6 +81,36 @@ class VersionListItem(BaseModel):
     display_time: str
 
 
+class PromptSetInfo(BaseModel):
+    slug: str
+    display_name: str
+    description: str = ""
+    created_at: Optional[str] = None
+    cloned_from: Optional[str] = None
+    is_default: bool = False
+
+
+class PromptSetCreateRequest(BaseModel):
+    slug: str
+    display_name: str
+    description: str = ""
+
+
+class PromptSetCloneRequest(BaseModel):
+    new_slug: str
+    new_display_name: str
+    new_description: str = ""
+
+
+class PromptSetUpdateRequest(BaseModel):
+    display_name: Optional[str] = None
+    description: Optional[str] = None
+
+
+class SetDefaultRequest(BaseModel):
+    slug: str
+
+
 class ExampleSchema(BaseModel):
     prefix: str
     display_name: str

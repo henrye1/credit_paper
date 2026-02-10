@@ -8,21 +8,31 @@ from bs4 import BeautifulSoup, Tag, NavigableString
 from core.gemini_client import GeminiClient, clean_html_response
 from config.settings import MODELS
 
+# Div classes that are structural wrappers (should be flattened, not treated as content)
+_WRAPPER_CLASSES = {'container', 'content', 'wrapper', 'main', 'page'}
+
+# Div classes that are decorative/structural but self-contained (skip entirely)
+_SKIP_CLASSES = {'page-break'}
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Parsing & reassembly
 # ──────────────────────────────────────────────────────────────────────────────
 
 def parse_report_to_sections(html_content: str) -> dict:
-    """Parse a generated HTML report into editable sections at h2 boundaries.
+    """Parse a generated HTML report into editable sections at heading boundaries.
 
-    Handles two report structures:
-      - Flat: h2 tags are direct children of body or a container div
-      - Paged: content is inside div.page wrappers, h2s inside pages
+    Handles multiple report structures:
+      - Flat: headings are direct children of body
+      - Wrapped: content inside div.container or div.page wrappers
+      - h1-based sections (e.g. "1. OVERVIEW") or h2-based sections
+
+    Automatically detects the heading level used for top-level sections
+    and splits at that level.
 
     Returns dict with keys:
         head_html: str - the <head> block (with styles)
-        body_prefix: str - any wrapper HTML before the content (e.g. opening page divs)
+        body_prefix: str - always empty (kept for backward compatibility)
         sections: list[dict] - each with id, title, html, status, original_html
     """
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -31,37 +41,38 @@ def parse_report_to_sections(html_content: str) -> dict:
     head_tag = soup.find('head')
     head_html = str(head_tag) if head_tag else ""
 
-    # Collect ALL elements in document order by flattening page wrappers
-    # This handles both flat and paged structures uniformly
     body = soup.body
     if not body:
         return {"head_html": head_html, "body_prefix": "", "sections": []}
 
-    # Gather all content-level elements in order
+    # Gather all content-level elements in order (flattening wrapper divs)
     all_elements = []
     _collect_elements(body, all_elements)
 
-    # Split at h2 boundaries
+    # Detect which heading level is used for top-level sections
+    split_tag = _detect_split_heading(all_elements)
+
+    # Split at heading boundaries
     sections = []
     current_parts = []
-    current_h2 = None
+    current_heading = None
 
     for el_html, el_tag in all_elements:
-        is_h2 = isinstance(el_tag, Tag) and el_tag.name == 'h2'
+        is_split = isinstance(el_tag, Tag) and el_tag.name == split_tag
 
-        if is_h2:
+        if is_split:
             # Flush previous section
             if current_parts:
-                _flush_section(sections, current_h2, current_parts)
+                _flush_section(sections, current_heading, current_parts)
                 current_parts = []
-            current_h2 = el_tag
+            current_heading = el_tag
             current_parts.append(el_html)
         else:
             current_parts.append(el_html)
 
     # Flush final section
     if current_parts:
-        _flush_section(sections, current_h2, current_parts)
+        _flush_section(sections, current_heading, current_parts)
 
     return {
         "head_html": head_html,
@@ -71,7 +82,7 @@ def parse_report_to_sections(html_content: str) -> dict:
 
 
 def _collect_elements(parent, result):
-    """Recursively collect content elements, flattening page wrappers."""
+    """Recursively collect content elements, flattening wrapper divs and sections."""
     for child in parent.children:
         if isinstance(child, NavigableString):
             text = str(child).strip()
@@ -82,21 +93,47 @@ def _collect_elements(parent, result):
         if not isinstance(child, Tag):
             continue
 
-        # If it's a page wrapper div, recurse into it
-        classes = child.get('class', [])
-        if child.name == 'div' and 'page' in classes:
+        classes = set(child.get('class', []))
+
+        # Skip purely decorative divs (page breaks, etc.)
+        if child.name == 'div' and classes & _SKIP_CLASSES:
+            continue
+
+        # Recurse into wrapper divs (container, page, content, etc.)
+        if child.name == 'div' and classes & _WRAPPER_CLASSES:
+            _collect_elements(child, result)
+        # Recurse into HTML5 <section> elements (always structural)
+        elif child.name == 'section':
             _collect_elements(child, result)
         else:
-            # It's a real content element - keep it
+            # It's a real content element — keep it
             result.append((str(child), child))
 
 
-def _flush_section(sections, h2_tag, parts):
+def _detect_split_heading(elements):
+    """Determine which heading level to split sections on.
+
+    Checks h1, h2, h3 in order. Uses the first level that has 2+ occurrences
+    at the content level (indicating it's the section-heading level).
+    Falls back to h2 if nothing qualifies.
+    """
+    counts = {}
+    for _, tag in elements:
+        if isinstance(tag, Tag) and tag.name in ('h1', 'h2', 'h3'):
+            counts[tag.name] = counts.get(tag.name, 0) + 1
+
+    for level in ('h1', 'h2', 'h3'):
+        if counts.get(level, 0) >= 2:
+            return level
+    return 'h2'
+
+
+def _flush_section(sections, heading_tag, parts):
     """Create a section dict and append to sections list."""
     html = "\n".join(parts)
-    if h2_tag is not None:
-        section_id = h2_tag.get('id', f'section_{len(sections)}')
-        title = h2_tag.get_text(strip=True)
+    if heading_tag is not None:
+        section_id = heading_tag.get('id', f'section_{len(sections)}')
+        title = heading_tag.get_text(strip=True)
     else:
         section_id = "__preamble__"
         title = "Cover Page"

@@ -1,7 +1,9 @@
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAssessmentStore } from '../store/assessmentStore'
 import { useSSELogs } from '../hooks/useSSELogs'
 import * as api from '../api/assessment'
+import { listPromptSets } from '../api/promptSets'
+import type { PromptSet } from '../types'
 import FileUploader from '../components/upload/FileUploader'
 import LogStream from '../components/pipeline/LogStream'
 import ReportPreview from '../components/report/ReportPreview'
@@ -52,6 +54,17 @@ function UploadView() {
   const [skipBizDesc, setSkipBizDesc] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [reportName, setReportName] = useState('')
+  const [promptSets, setPromptSets] = useState<PromptSet[]>([])
+  const [selectedSet, setSelectedSet] = useState('')
+
+  // Fetch prompt sets on mount
+  useEffect(() => {
+    listPromptSets().then(sets => {
+      setPromptSets(sets)
+      const defaultSet = sets.find(s => s.is_default)
+      if (defaultSet) setSelectedSet(defaultSet.slug)
+    }).catch(() => {})
+  }, [])
 
   const canRun = ratioFiles.length > 0 && pdfFiles.length > 0 && reportName.trim().length > 0
 
@@ -67,11 +80,12 @@ function UploadView() {
     setSubmitting(true)
     try {
       const { assessment_id } = await api.startAssessment(
-        ratioFiles[0], pdfFiles, model, skipBizDesc, reportName.trim()
+        ratioFiles[0], pdfFiles, model, skipBizDesc, reportName.trim(), selectedSet
       )
       store.setAssessmentId(assessment_id)
       store.setModelChoice(model)
       store.setReportName(reportName.trim())
+      store.setPromptSet(selectedSet)
       store.setPhase('generating')
     } catch (e: any) {
       alert(`Error: ${e.message}`)
@@ -124,6 +138,27 @@ function UploadView() {
         <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
+              Prompt Set
+            </label>
+            <select
+              value={selectedSet}
+              onChange={(e) => setSelectedSet(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white"
+            >
+              {promptSets.map(s => (
+                <option key={s.slug} value={s.slug}>
+                  {s.display_name}{s.is_default ? ' (default)' : ''}
+                </option>
+              ))}
+            </select>
+            {promptSets.find(s => s.slug === selectedSet)?.description && (
+              <p className="text-xs text-gray-400 mt-1">
+                {promptSets.find(s => s.slug === selectedSet)?.description}
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Report Generation Model
             </label>
             <select
@@ -135,17 +170,18 @@ function UploadView() {
               <option value="gemini-2.5-pro">gemini-2.5-pro (requires billing)</option>
             </select>
           </div>
-          <div className="flex items-end">
-            <label className="flex items-center gap-2 text-sm text-gray-700 pb-2.5">
-              <input
-                type="checkbox"
-                checked={skipBizDesc}
-                onChange={(e) => setSkipBizDesc(e.target.checked)}
-                className="rounded"
-              />
-              Skip business description extraction
-            </label>
-          </div>
+        </div>
+
+        <div className="flex items-center">
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={skipBizDesc}
+              onChange={(e) => setSkipBizDesc(e.target.checked)}
+              className="rounded"
+            />
+            Skip business description extraction
+          </label>
         </div>
 
         <button

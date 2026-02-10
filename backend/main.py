@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
-from backend.routers import assessment, prompts, examples, settings, reports, pipeline
+from backend.routers import assessment, prompts, prompt_sets, examples, settings, reports, pipeline
 
 FRONTEND_DIR = PROJECT_ROOT / "frontend" / "dist"
 
@@ -56,6 +56,7 @@ if FRONTEND_DIR.exists():
 app.include_router(assessment.router, prefix="/api/assessment", tags=["assessment"])
 app.include_router(pipeline.router, prefix="/api/pipeline", tags=["pipeline"])
 app.include_router(prompts.router, prefix="/api/prompts", tags=["prompts"])
+app.include_router(prompt_sets.router, prefix="/api/prompt-sets", tags=["prompt-sets"])
 app.include_router(examples.router, prefix="/api/examples", tags=["examples"])
 app.include_router(settings.router, prefix="/api/settings", tags=["settings"])
 app.include_router(reports.router, prefix="/api/reports", tags=["reports"])

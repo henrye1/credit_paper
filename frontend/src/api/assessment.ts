@@ -7,7 +7,8 @@ export async function startAssessment(
   pdfFiles: File[],
   model: string,
   skipBizDesc: boolean,
-  reportName: string
+  reportName: string,
+  promptSet: string = ''
 ): Promise<{ assessment_id: string }> {
   const form = new FormData()
   form.append('ratio_file', ratioFile)
@@ -15,6 +16,7 @@ export async function startAssessment(
   form.append('model', model)
   form.append('skip_biz_desc', String(skipBizDesc))
   form.append('report_name', reportName)
+  form.append('prompt_set', promptSet)
 
   const res = await fetch(`${BASE}/start`, { method: 'POST', body: form })
   if (!res.ok) throw new Error(await res.text())

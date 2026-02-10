@@ -22,6 +22,11 @@ CONVERTED_REPORTS_DIR = DATA_DIR / "converted_reports"
 ASSESSMENTS_DIR = DATA_DIR / "assessments"
 
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
+PROMPT_SETS_DIR = PROMPTS_DIR / "sets"
+PROMPT_REGISTRY_FILE = PROMPT_SETS_DIR / "_registry.json"
+DEFAULT_PROMPT_SET = "bdo_sme"
+
+# Legacy paths (used for one-time migration to prompt sets)
 PROMPTS_CURRENT_DIR = PROMPTS_DIR / "current"
 PROMPTS_HISTORY_DIR = PROMPTS_DIR / "history"
 
@@ -29,7 +34,7 @@ PROMPTS_HISTORY_DIR = PROMPTS_DIR / "history"
 for d in [REPORT_INPUTS_DIR, FS_LEARNING_INPUTS_DIR, REPORT_OUTPUT_DIR,
           AUDIT_LLM_INPUT_DIR, AUDIT_LLM_OUTPUT_DIR, EVAL_INPUT_DIR,
           EVAL_OUTPUT_DIR, CONVERTED_REPORTS_DIR, ASSESSMENTS_DIR,
-          PROMPTS_HISTORY_DIR]:
+          PROMPT_SETS_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
 # --- API Keys ---

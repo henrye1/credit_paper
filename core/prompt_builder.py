@@ -9,14 +9,15 @@ def build_report_prompt(company_name: str,
                         business_desc_content: str,
                         target_md_file_obj,
                         target_pdf_file_objs: list,
-                        example_files_info: list) -> list:
+                        example_files_info: list,
+                        prompt_set: str = None) -> list:
     """Build the full prompt_contents list for Stage 3 (report generation).
 
     Returns a list of mixed content (strings + file objects) ready for
     client.models.generate_content(contents=...).
     """
     # Load prompt sections from YAML
-    instructions = load_prompt("report_instructions")
+    instructions = load_prompt("report_instructions", prompt_set)
     inst_sections = instructions.get("sections", {})
 
     # Role and context
@@ -34,8 +35,8 @@ def build_report_prompt(company_name: str,
     overall_conclusion = overall_conclusion.replace("{company_name}", company_name)
 
     # Assemble the two guidance documents from their YAML sections
-    guidance1_text = assemble_prompt_text("fin_condition_assessment_synthesis")
-    guidance2_text = assemble_prompt_text("financial_health_diagnostics")
+    guidance1_text = assemble_prompt_text("fin_condition_assessment_synthesis", prompt_set)
+    guidance2_text = assemble_prompt_text("financial_health_diagnostics", prompt_set)
 
     # Build the prompt_contents list
     prompt_contents = [
@@ -97,9 +98,10 @@ def build_report_prompt(company_name: str,
 
 def build_audit_prompt(html_report_content: str,
                        llm_risk_research_text: str,
-                       report_filename: str) -> list:
+                       report_filename: str,
+                       prompt_set: str = None) -> list:
     """Build the prompt for Stage 4 (audit review)."""
-    audit = load_prompt("audit_criteria")
+    audit = load_prompt("audit_criteria", prompt_set)
     sections = audit.get("sections", {})
 
     role = sections.get("role_definition", {}).get("content", "")

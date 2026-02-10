@@ -1,0 +1,458 @@
+metadata:
+  name: fin_condition_assessment_synthesis
+  description: >
+    Comprehensive prompt for synthesizing the financial condition assessment of a company.
+    Covers financial position (assets, liabilities, net worth), financial sustainability
+    (ratios, working capital), liquidity analysis, financial performance (results,
+    profitability, business activity), and concluding ratio summary and overall rating.
+    Sourced from the Credit Assessment Agent RAG user manual.
+
+sections:
+  financial_position_assets_liabilities:
+    title: "I.A - Structure of Assets and Liabilities"
+    description: >
+      Criteria for assessing whether the asset and liability structure is strong,
+      acceptable, weak, or supports growth. Includes guidance on intercompany
+      adjustments, leverage, current/quick ratios, and balance sheet quality.
+    content: |
+      **I. Financial Position Analysis**
+
+      **A. 4.2.1 Structure of the Assets and Liabilities**
+
+      * **Asset and Liability Structure is Strong/Very Strong/Well Structured IF:**
+        + The business is well-capitalized.
+        + For non-profit entities like industry associations, this means having sufficient reserves or accumulated funds to support ongoing operations and strategic initiatives.
+        + Crucially, assess the quality of capitalization by critically evaluating the nature, terms, and recoverability of material related-party loans/receivables or the impact of significant non-operational assets.
+        + Consider calculating an adjusted (tangible) net worth if such items are material to understand true operational capitalization.
+        + The company has a strong current ratio (e.g., ratios significantly above 2:1, or even higher like 5:1 or more, or cash covering total current liabilities multiple times over).
+        + Consider if reclassification of material intercompany balances (e.g., long-term loans to group companies that are operationally liquid for the group, or short-term group liabilities funded by long-term group assets) is justified to reflect economic substance for an adjusted current ratio analysis.
+        + Clearly document any such reclassifications and their rationale. For very large, globally diversified companies, even a current ratio slightly above 1:1 might be acceptable if supported by massive cash reserves, strong cash flow, and diverse revenue streams.
+        + The company has a strong quick ratio, especially if inventory is low or non-existent.
+        + The company has low leverage (e.g., low debt-to-equity ratio, low gearing ratio for non-financial institutions).
+        + For large multinational corporations, substantial absolute debt levels can still be considered low leverage if equity and earnings are proportionally massive.
+        + When assessing leverage, differentiate between external interest-bearing debt and shareholder/related-party loans (noting if interest-bearing or interest-free).
+        + Consider calculating adjusted leverage ratios by netting material, demonstrably offsetting intercompany asset and liability balances, or by excluding clearly subordinated and equity-like related-party debt, to clarify external risk and economic leverage.
+        + Document the basis for any such adjustments.
+        + Cash holdings are significant and can cover current liabilities and operational needs; for large tech companies, this can mean multi-billion dollar cash and short-term investment reserves.
+        + Fixed and Non-Current Assets are a reasonable percentage of Total Assets, and Current Assets (especially cash, trade debtors, and inventory) make up a significant portion.
+        + For construction companies, significant contract assets (work in progress) are normal.
+        + Long-term liabilities are low or well-structured with appropriate maturity profiles.
+        + There are no, or very low levels of, external interest-bearing liabilities on the balance sheet (company is effectively debt-free or debt is primarily related to leases, or for large corporations, debt is a small fraction of total assets/equity).
+        + The Total Assets to Total Liabilities ratio is strong (e.g., 1.3:1 or higher, sometimes significantly higher like 3:1 or 6:1).
+        + Equity base has increased significantly through retained earnings from strong profitability (or accumulation of surpluses for non-profits).
+        + The company has a strong equity base (see Net Worth section for specifics).
+        + The company's balance sheet is very well structured with low or no financial interest-bearing debt and a strong working capital position (potentially after justified intercompany adjustments).
+        + A very high percentage of assets are current assets, significantly increasing liquidity.
+        + The company does not have significant, potentially unrecoverable loans to group and related companies or high-risk intangible assets that distort the balance sheet without strong underlying value. (Assess recoverability of related party loans rigorously, noting auditor's stance and applying professional skepticism).
+        + The company holds very little inventory, or inventory is primarily purchased when required.
+        + For construction companies, "inventory" might relate to materials for specific projects and should be appropriately managed.
+        + Current ratio and quick ratio are acceptable due to strong cash generating ability and access to undrawn banking facilities, even if numerically on the lower side (e.g., CR around 1.1:1, QR around 0.99:1 for a large corporation).
+        + A significant portion of current liabilities relates to deferred income, which is non-cash settling and indicates future revenue.
+      * **Asset and Liability Structure is Acceptable/Adequately Structured IF:**
+        + The current ratio is acceptable (e.g., around 1:1 to 1.5:1), or improves to an acceptable level after justified reclassification/netting of intercompany balances (clearly documented) , especially if supported by a relatively high amount of cash on the balance sheet or strong cash generation.
+        + A significant portion of debt has unconditional rights to defer payments or is subordinated (e.g., shareholder loans).
+        + The gearing ratio is acceptable given the asset composition (e.g., a higher gearing ratio might be acceptable if a large portion of assets are current assets or if debt funded income-accretive assets and cash flow is sufficient to service it).
+        + Loans to/from group companies form a significant portion of current assets/liabilities, but the underlying current ratio excluding these is still acceptable, OR the related group company is demonstrably financially strong and amounts are deemed recoverable/payable based on clear evidence. **The assessment of intercompany balances is critical; reliance on these requires strong justification, and their true liquidity must be rigorously assessed. If a large intercompany loan (e.g., interest-free, no fixed repayment term) significantly impacts current assets, calculate an adjusted Current Ratio excluding or reclassifying this loan to long-term, and base the acceptability on this adjusted view or on unequivocal evidence of its short-term recoverability.**
+        + The company is adequately capitalized despite a high debt-to-equity ratio, especially if loans from group companies (particularly if subordinated or interest-free) are excluded from the calculation of "hard" debt, or if debt is primarily lease liabilities with matching right-of-use assets.
+        + The balance sheet is well structured with a strong equity base and an acceptable level of interest-bearing debt.
+        + Structure is acceptable due to shareholder loans and resulting liquidity boost, even with negative equity, provided shareholder support is credible, formally documented (e.g., subordination agreements, letters of support with clear terms), and ongoing. **However, it must be explicitly stated that the standalone structure *before* considering shareholder support is 'Weak' due to negative equity. The 'Acceptable' rating is entirely contingent on this support.**
+        + Structure is acceptable considering the nature of the company (e.g., consulting, service with low fixed asset needs; non-profits focused on operational liquidity rather than high asset base).
+        + Working capital is well structured. For construction companies, this means effective management of contract assets and liabilities.
+        + Current ratio improves to an acceptable level if specific items like customer deposits (treated as both current assets and liabilities) or significant deferred income are considered.
+        + Leverage is acceptable for the type of business (e.g., a higher debt-to-equity ratio for a large logistics firm with significant goodwill, if cash flow is strong and sustainable).
+      * **Asset and Liability Structure is Weak/Very Weak IF:**
+        + The company is insolvent before the subordination of shareholder loans (or if subordination is insufficient to achieve solvency, or shareholder loans still result in a very weak equity base).
+        + The company is highly leveraged with external financial debt even after subordination of shareholder loans or after considering the economic substance of intercompany debt which functions like external debt.
+        + A very high percentage of current assets are loans to group companies, whose collectability is questionable or unassessed by auditors, or if the related group entities are financially weak. **Quantify this percentage and explicitly state the impact on liquidity and solvency if these loans are not recoverable in the short term. This includes recalculating the Current Ratio after reclassifying such loans if their short-term liquidity is doubtful (e.g., no fixed repayment terms, interest-free).**
+        + Failure to critically assess these intercompany assets can mask underlying structural weakness.
+        + The current ratio is low (e.g., <1:1, sometimes significantly so like 0.5:1 or 0.2:1, or e.g. 0.8:1 for a construction company if not supported by strong project cash flows), and cannot be reasonably improved by justified reclassification of intercompany items, or if such reclassification still results in a weak ratio (e.g. **after reclassifying a large, illiquid shareholder/group loan to non-current**), especially if not supported by strong cash or reliable, documented group support.
+        + **The structure is deemed weak if a large intercompany loan, when reclassified from current to non-current due to uncertain repayment terms or subsidiary's weak financial health, results in a significantly deteriorated Current Ratio (e.g., below 1:1), even if headline CR appeared acceptable.**
+        + Goodwill has been fully written off by the parent company or significantly impaired, indicating issues with acquired value.
+        + The capital base is vulnerable due to weak economic conditions and high contagion risk from intercompany loans where the group's overall health is a concern.
+        + The equity base is low/very small relative to the balance sheet size, making it vulnerable to asset value volatility or impairments (especially impairments of related-party loans or goodwill).
+        + Current liabilities exceed total current assets, indicating negative working capital without clear short-term resolution or strong, verifiable evidence of group support to cover the deficit.
+        + The company has a negative equity position, even after considering potential favorable terms of related-party debt.
+        + Tax payable is a significant current liability with no cash on the balance sheet to meet it.
+        + The balance sheet structure has deteriorated due to accumulated losses eroding the equity base.
+        + The company is reliant on shareholder support (e.g., subordination of intergroup loans, bank guarantees from holding company, letters of support) for ongoing operations due to a weak/insolvent position, and this support is not formally guaranteed or its continuity is uncertain.
+        + High inventory balance combined with low cash and weak quick ratio.
+        + For construction companies, large unbilled contract assets with slow conversion to cash or significant disputes.
+        + Significant related party transactions dominate the balance sheet without clear commercial rationale or transparent terms, indicating high dependency and potential contagion risk.
+        + Material unanalyzed or potentially unrecoverable related-party loans/receivables significantly impact the assessment of true asset quality and capitalization, potentially masking underlying weakness. **The proportion of such loans to total assets must be quantified and its impact discussed.**
+      * **Asset and Liability Structure Supports Growth IF:**
+        + The financial structure is strong (as defined above, including robust assessment of related-party items and any justified analytical adjustments ).
+        + The equity base and overall financial position are strong (see Net Worth section).
+        + The company is well-capitalized and has access to funding (external or well-documented internal group funding).
+
+  financial_position_net_worth:
+    title: "I.B - Net Assets (Net Worth)"
+    description: >
+      Criteria for assessing whether net worth (net assets) is strong, sufficient,
+      weak, or vulnerable. Includes special considerations for service/software/consulting
+      and non-profit companies, and the impact of intercompany loans and intangibles.
+    content: |
+      **B. 4.2.2 Net Assets (Net Worth)**
+
+      * **Net Worth is Strong/Sufficient/Adequate IF:**
+        + Net worth has increased due to strong profitability and retention of earnings (or accumulation of surpluses for non-profits).
+        + Net worth is supported by a strong liquid balance sheet with significant cash (or highly liquid investments for non-profits or large corporations).
+        + The company is very well capitalized (see above).
+        + Net worth is supported by tangible assets (no or minimal goodwill/intangibles, or equity remains strong after deducting them). For very large, profitable tech companies, even with significant goodwill from acquisitions, if the overall equity is massive and growing through retained earnings, it's viewed as strong.
+        + However, always consider an adjusted tangible net worth by excluding goodwill and material related-party loans/receivables of uncertain value or recoverability. **Quantify material related-party loans as a percentage of total assets and discuss the dependency of net worth on their recoverability.**
+        + The (adjusted) equity base is regarded as sufficient/strong to support the business/operations, even if loans to group companies are deducted (assuming those deducted loans are not core to operational funding and their recoverability is a concern).
+        + For non-profits, "accumulated funds" serve a similar purpose to equity and should be sufficient for operational stability and strategic goals.
+        + Equity has grown due to retained profits, even after sustainable dividend payments.
+        + Analyze dividend payout ratios in relation to profits and CFO (Cash Flow from Operations) to confirm sustainability and support for internal equity growth.
+        + If full Cash Flow Statements are unavailable, clearly state the basis for dividend calculation (e.g., from changes in retained earnings and PAT) and acknowledge limitations.
+        + Note if a significant dividend payment, especially if its magnitude is confirmed from reliable sources (e.g., detailed AFS notes if available), is the primary reason for a decrease in net worth, and assess if this payment was prudent given the company's profitability, calculated/stated CFO, and liquidity at the time. **If such a payment impacted current equity levels or led to subsequent reliance on shareholder loans, this historical context should be provided.**
+        + Equity base has strengthened due to a capital injection/share issue.
+        + Goodwill has been fully written off, removing future negative impact from its impairment.
+        + Net worth is strong even if intangible assets are significant, provided the remaining tangible equity base is sufficient and supported by assets like cash OR the intangibles are of high quality and generate sustainable earnings (e.g., globally recognized brand and IP for a large tech company).
+        + For a small fee-based consulting company, a small equity base is acceptable if supported by tangible assets (primarily cash) and no intangibles.
+      * **Net Worth Places the Company in a Strong Position to Support Future Growth and Absorb Adverse Volatility IF:**
+        + Net worth is strong (as defined above, including after critical assessment of related-party items and intangibles, and any justified analytical adjustments ).
+        + For non-profits, strong reserves allow for stability and pursuit of mandate even with fluctuating income.
+      * **Net Worth Assessment (Special Consideration for Service/Software/Consulting/Non-Profit Companies):**
+        + A low equity base (after deducting goodwill and intangibles, and potentially high-risk related-party receivables ) is less of a risk IF key assets are demonstrably valuable employees, long operating history, valuable unbooked IP, strong client base, and consistent cash generation.
+        + Shareholder loans, even if not subordinated, can effectively boost equity if they are long-term and bear favorable terms, but this should be clearly distinguished from external third-party equity.
+        + For a service-related business (like software development or consulting), a large tangible asset base is not required to operate.
+        + **For fee-based businesses with low capital intensity, this context should be noted, but it does not negate the risks associated with high levels of related-party loans or negative tangible equity.**
+        + Value may reside in name, market position, employees, client base, making net worth dependent on goodwill value rather than tangible assets, especially for consulting firms post-buyout. This requires qualitative assessment.
+        + Equity not supported by tangible assets (e.g., due to high goodwill from acquisitions or large unrecoverable related-party loans) is a concern, but less so if cash generation, brand name, and overall financial position are demonstrably strong.
+        + For non-profits, "net worth" is often represented as "accumulated funds" or "reserves," and its adequacy is judged against operational needs and stability rather than tangible asset backing.
+      * **Net Worth is Weak/Vulnerable IF:**
+        + The company is insolvent without subordinated loans, or shareholder loans result in only a marginal/weak equity base.
+        + A default on loans made to subsidiaries/associated companies would likely lead to insolvency, highlighting the risk of material related-party receivables.
+        + The parent group has written off its investment in the company.
+        + The ability to generate sustainable profitability (or surpluses for non-profits) is questionable.
+        + The equity base (or accumulated funds for non-profits) has been eroded by losses (or deficits).
+        + The equity base is low/very weak relative to the balance sheet size and vulnerable to impairments (especially of goodwill or related-party loans).
+        + Net asset value is negative.
+        + To achieve a solvent net worth, the company needs retained profits or shareholder equity injections, and these are not assured. (Note: source 92 repeated, likely meant for a separate point or typo in original document, keeping as is for fidelity).
+        + Net worth has significantly deteriorated due to losses. (Note: source 93 likely follows point above, but original source had 92 then 92 then 93. Assuming 93 follows logically "Net worth has significantly deteriorated...").
+        + Potential litigation and tax liabilities pose a threat to the existing equity. (Note: source 93 repeated, original doc structure).
+        + Significant deferred tax assets (whose recoverability depends on future profits) or unrecoverable intercompany loans risk the equity base.
+        + The level of intangible assets has a negative impact on the overall strength of the balance sheet in a stress scenario if not backed by strong cash flows or if they are of uncertain value.
+        + For construction companies, a weak net worth makes it difficult to secure performance bonds or fund large projects.
+      * **Net Worth impacted by Intercompany Loans/Intangibles:**
+        + If net worth is positive but a significant portion of assets are intercompany loans, impairment of these loans (due to subsidiary weakness) could negatively impact equity; auditor's assessment of recoverability is key, but independent skepticism should also be applied. The analyst should consider the implications of such intercompany assets on the true, standalone financial strength. **Quantify these intercompany loans as a percentage of total assets and/or net worth, and explicitly state the risk to solvency if these loans are impaired. Note if these loans contribute to a weak cash position for the lending entity.**
+
+  financial_sustainability_ratios:
+    title: "II.A - Key Financial Sustainability Ratios"
+    description: >
+      Criteria for assessing whether financial sustainability is good, acceptable,
+      under pressure, or weak based on key ratios including margins, leverage,
+      interest cover, EBITDA, and cash flow. Also covers the impact of external
+      factors and company resilience.
+    content: |
+      **II. Financial Sustainability Analysis**
+
+      **A. 4.3.1 Key ratios of the company's financial sustainability**
+
+      * **Financial Sustainability is Good/Sufficient/Strong/Positive IF:**
+        + Net margin is good for the industry (e.g., 5-10% or higher for non-FIs; for large, mature tech companies, operating margins can be very high, e.g., >30-40%).
+        + For non-profits, consistently generating a surplus or breaking even while achieving its mission.
+        + Critically analyze the drivers of margin changes. If "Other Income" or similar non-core items (e.g., significant management fees from related parties, one-off sundry income, large gains on asset sales) significantly impact net profit, investigate their nature, recurrence, and sustainability. True sustainability relies on core operational profitability.
+        + The balance sheet is strong with high liquidity (after considering related-party impacts and any justified analytical adjustments, **including the potential reclassification of significant, illiquid intercompany loans from current to non-current assets when assessing liquidity ratios**).
+        + Demand for products/services is relatively inelastic or company has strong market position.
+        + Debt-to-equity ratio is acceptable/low (considering the nature of debt, e.g., external vs. related party, and after any justified intercompany netting/adjustments ).
+        + Gearing ratio is acceptable.
+        + Interest coverage ratio is strong (e.g., >5-10 times; for highly profitable companies with minimal debt, this can be exceptionally high).
+        + Earnings growth and profit retention have strengthened the (adjusted tangible) equity base and improved key ratios.
+        + The company has no, or very low levels of, external interest-bearing debt.
+        + Current and quick ratios are strong (potentially after justified intercompany adjustments).
+        + The company is cash generative from core operations (positive and stable/growing CFO).
+        + If CFO is calculated, clearly state the methodology (e.g., indirect method from P&L and B/S changes) and acknowledge limitations if full AFS (including Cash Flow Statement) is unavailable.
+        + If AFS-stated CFO is available, prioritize its use. Reconcile any significant differences between calculated and stated CFO if possible.
+        + EBITDA increased significantly, and EBITDA margin improved or is consistently strong from core activities. (Note: original source 112 used twice, assuming this refers to EBITDA points).
+        + Strong cash conversion cycle.
+        + Low balance sheet leverage from external financial debt (or after justified intercompany netting showing a stronger position) .
+        + Strong EBIT and EBITDA indicate ability to take on debt if needed for growth.
+        + Acceptable current and quick ratios for a large corporation, mitigated by strong cash generation and liquidity.
+        + For construction companies, consistent project profitability and ability to secure new, profitable contracts.
+        + Revenue shows consistent growth, or stable trends with clear explanations for any significant fluctuations (e.g., contextualize impact of external events like COVID-19 recovery, market changes, or specific company initiatives).
+      * **Financial Sustainability is Acceptable IF:**
+        + Gross margin is acceptable for the type of company.
+        + Key ratios are acceptable in the context of a very small company with low ability to support future growth but stable operations. For non-profits, if income consistently covers expenditure and maintains adequate reserves.
+        + Company's only debt is subordinated shareholder loans, and effective equity base (clearly defined and calculated as equity plus subordinated loans) is sufficient, especially if returned to profitability. **However, the analysis must also explicitly state the 'Weak' position based on actual negative equity if applicable. Sustainability is rated 'Acceptable' on this basis *only if* shareholder support is unwavering and formally secured, and operational improvements are evident and sustained.**
+        + Ratios are weak but mitigated by other factors (e.g., high interest-bearing debt mitigated by profitability and strong cash generation; weak current/quick ratios mitigated by efficient receivables collection or justified intercompany adjustments that improve the picture ).
+        + Very low, albeit improving, net profit margin (e.g. <2%) if the company operates in a very low margin sector and demonstrates cost control.
+      * **Financial Sustainability is Under Pressure/Questionable/Weak IF:**
+        + Net margin decreased or is very low/negative and persistent. For non-profits, persistent deficits that erode reserves. This is especially concerning if core operational margins are weak, even if headline net margin is temporarily boosted by unsustainable "Other Income."
+        + The company needs to right-size its cost base. (Note: source 126 used twice)
+        + The company is reliant on extraordinary gains or volatile donations (for non-profits, if donations are volatile and core operational income doesn't cover costs).
+        + The company has a weak equity base (or reserves for non-profits), limiting ability to absorb negative volatility, unless strong, documented group support exists.
+        + High level of interest-bearing debt and low interest cover ratio (e.g., <2 times), especially if leverage remains high even after considering intercompany dynamics.
+        + High Debt to EBITDA and decreasing EBITDA to Revenue. (Note: source 129 used twice)
+        + Decreased cash generated from operations. If CFO is negative or significantly declining (whether stated or calculated), this is a major concern for sustainability, especially if large dividends are also being paid.
+        + Weak gross and net profit margins due to weak financial performance from core operations.
+        + Sustained losses eroding the equity base. (Note: source 132 used twice)
+        + Deteriorating current and quick ratios, which are not reasonably improved by justified intercompany adjustments. **Sustainability is questionable if the Current Ratio becomes weak after a large, previously current intercompany loan is (analytically) reclassified to non-current due to its terms or the debtor's financial health, despite reported strong CFO.**
+        + Potential litigation and tax liabilities pose a threat. (Note: Source 134 is listed after "EBITDA margins" in original mapping, but fits here as per new structure).
+        + Deteriorating gross and EBITDA margins.
+        + Company is solvent only due to shareholder loans injected, indicating underlying operational non-viability.
+        + EBITDA decreased significantly due to reporting a loss. (Note: source 135 used twice)
+        + Weaker current ratio due to increased current liabilities not matched by operational assets.
+        + Weak quick ratio due to high inventory and low cash.
+        + Weak, albeit improved, cash conversion cycle, if still excessively long.
+        + Company has significant interest-bearing debt that strains cash flow. (Note: source 138 used twice)
+        + Very weak current ratio and quick ratio.
+        + Cash generation is very weak (e.g. cumulative negative cash flow from operations over several years).
+        + Substantially negative EBIT and EBITDA in each of the past 3 years from core operations.
+        + For construction companies, significant losses on major projects, or inability to secure new work.
+      * **Impact of External Factors and Company Resilience:**
+        + Robustness demonstrated by performing well despite disruptive events. Provide specific examples if possible (e.g., maintained profitability during COVID-19 lockdown by adapting services).
+
+  financial_sustainability_working_capital:
+    title: "II.B - Working Capital Analysis"
+    description: >
+      Criteria for assessing whether the working capital position is strong,
+      acceptable, or weak. Covers current ratio, quick ratio, cash conversion
+      cycle, receivables, inventory, and payables management.
+    content: |
+      **B. 4.3.2 Working Capital Analysis**
+
+      * **Working Capital Position is Strong IF:**
+        + Current ratio is strong (e.g., >2:1, or >1.5:1 with strong cash component, potentially after justified intercompany adjustments). **If a numerically strong ratio is primarily due to non-operational funding (e.g., cash from shareholder loans not yet deployed, or large intercompany receivables of uncertain near-term liquidity), this context must be provided. The *quality* of this working capital position should be assessed in light of its funding source and the company's underlying operational cash generation versus its reliance on related-party transactions.**
+        + Quick ratio is strong (e.g., >1:1, especially if inventory is low/absent).
+        + Cash conversion cycle is short (negative or low positive days).
+        + Company maintains a strong cash position relative to operational needs.
+        + Efficient management of receivables (low debtor days) and inventory (low inventory days, high turnover).
+        + Payables days are managed effectively, not unduly stretched. (Note: source 149 used twice)
+        + Positive and growing net working capital (Current Assets - Current Liabilities).
+      * **Working Capital Position is Acceptable IF:**
+        + Current and quick ratios are adequate (e.g., CR around 1:1 to 1.5:1, or improves to this level after justified intercompany adjustments ), especially if supported by good operational cash flow or access to committed credit lines.
+        + Cash conversion cycle is reasonable for the industry.
+        + Components (debtors, inventory, creditors) are managed reasonably well, even if overall ratios are not stellar. (Note: source 152 used twice)
+        + Negative working capital might be acceptable if it's a structural feature of the industry (e.g., retailers with fast inventory turnover and favorable credit terms from suppliers) and supported by strong CFO.
+      * **Working Capital Position is Weak IF:**
+        + Current ratio is low (e.g., <1:1, and remains weak even after considering reasonable intercompany adjustments, **such as the reclassification of a material, illiquid intercompany loan to non-current assets**).
+        + **The working capital position is considered weak if an apparently acceptable Current Ratio is misleading due to a large, illiquid intercompany loan classified as current, and whose reclassification to non-current would render the CR weak. This is true even if CFO was strong in a recent period, as the loan itself may be tying up cash.**
+        + Quick ratio is low, indicating reliance on selling inventory to meet short-term obligations.
+        + Cash conversion cycle is excessively long. (Note: source 155 used twice)
+        + High levels of receivables with long collection periods or significant bad debt provisions.
+        + High inventory levels with slow turnover or risk of obsolescence. (Note: source 156 used twice)
+        + Stretched payables, indicating potential cash flow problems.
+        + Significant negative working capital that is not a normal feature of the business model and strains liquidity.
+        + Reliance on short-term financing (e.g., overdrafts) to fund persistent working capital gaps. (Note: source 158 used twice)
+
+  liquidity_analysis:
+    title: "III - Liquidity Analysis"
+    description: >
+      Criteria for assessing whether liquidity is good/strong, acceptable, or
+      weak/strained. Covers cash position, current/quick ratios, CFO validation,
+      credit facilities, interest coverage, and dividend impact on liquidity.
+    content: |
+      **III. Liquidity Analysis**
+
+      * **Financial Sustainability/Liquidity is Good/Sufficient/Strong/Positive IF:**
+        + The company has a strong cash position (absolute amount and relative to liabilities/operations).
+        + Current and quick ratios are strong (as defined above, potentially after justified intercompany adjustments, **including considering the impact of reclassifying material illiquid intercompany loans to non-current**).
+        + The company is cash generative from core operations (positive and stable/growing CFO).
+        + Any qualitative claims in source documents stating the company is "cash generative" MUST be validated against the calculated or AFS-stated CFO.
+        + If AFS-stated CFO is available (e.g., from a full Cash Flow Statement), it should be prioritized.
+        + If CFO is calculated, methodology must be clear. If a reported CFO (e.g., from AFS) appears negative primarily due to large discretionary payments like dividends, the underlying operational cash generation (pre-dividend) should be assessed.
+        + Discrepancies between calculated/stated CFO and external qualitative claims must be investigated and reconciled or highlighted as a concern.
+        + Access to committed, undrawn credit facilities.
+        + Low reliance on short-term debt. (Note: source 166 used twice)
+        + Strong interest coverage.
+        + Ability to meet short-term obligations comfortably from liquid assets and operational cash flow.
+        + Dividend payments are well-covered by profits and operational cash flow, not straining liquidity.
+      * **Financial Sustainability/Liquidity is Acceptable IF:**
+        + Cash position is adequate.
+        + Current/quick ratios are acceptable, not ideal but not critical given other factors like strong CFO or available credit lines.
+        + CFO is positive but may be modest or somewhat volatile.
+        + Company can meet obligations but may have a tighter buffer. (Note: source 172 used twice)
+      * **Financial Sustainability/Liquidity is Weak/Strained IF:**
+        + Low cash balances.
+        + Weak current and quick ratios (e.g., <1:1, and remain weak after considering reasonable intercompany adjustments, **or become weak after a material illiquid intercompany loan is reclassified to non-current**).
+        + **Liquidity is weak if the current ratio, after adjusting for a large intercompany loan (reclassified to non-current due to its nature e.g. interest-free, no fixed repayment term, and reliance on the borrowing subsidiary's health), becomes weak, irrespective of recent operational cash flow strength. The focus is on the balance sheet's ability to meet obligations from truly liquid assets.**
+        + Negative or consistently declining CFO from core operations. (Note: source 174 used twice)
+        + Heavy reliance on short-term, uncommitted financing (e.g., overdrafts that are frequently at their limit).
+        + Difficulty meeting short-term obligations without external support or asset sales.
+        + High risk of default on debt obligations if operational cash flow falters.
+        + Significant dividend payments made despite weak CFO or tight liquidity, exacerbating the strain. (Note: source 177 used twice)
+
+  financial_performance_results:
+    title: "IV.A - Analysis of Financial Results"
+    description: >
+      Criteria for assessing whether financial performance is strong, acceptable,
+      volatile, or weak. Covers turnover growth, profitability trends, cost
+      management, and the impact of exceptional items and specific events.
+    content: |
+      **IV. Financial Performance**
+
+      **A. 4.5.1 Analysis of the Financial Results**
+
+      * **Financial Performance is Strong/Acceptable IF:**
+        + Turnover and net profit after tax (or surplus for non-profits) have increased significantly over a period. For large tech companies, consistent double-digit revenue and profit growth.
+        + Growth supported by a strong, well-capitalized, and liquid balance sheet (assessed with consideration for related-party items and any justified analytical adjustments ).
+        + Revenue and net profit after tax increased, with profitability boosted by controlled cost increases (operating costs increase at a slower rate than turnover once critical mass has been achieved). This may also involve analyzing the Operating Expenses to Turnover ratio.
+        + Steep increase in turnover due to recovery from prior disruptions (e.g., COVID-19) or strong market demand. Explicitly mention and contextualize such events.
+        + Profit after tax increased significantly.
+        + EBIT increased, positively impacted by decrease in net exceptional losses or increased profitability from core operations.
+        + Interest costs decreased or are well-managed. (Note: source 186 used twice)
+        + Revenue increased significantly due to market factors or company-specific success.
+        + Management accounts show significant revenue improvement and higher net profit than prior audited years (note reliance on unaudited data).
+        + For construction companies, successful completion of major projects on time and within budget, leading to profit recognition.
+        + For non-profits, revenue (grants, donations, membership fees) consistently exceeds expenses, leading to growth in accumulated funds.
+        + When assessing historical profit trends (e.g., for a base year comparison), identify and consider the impact of any material non-recurring items (such as large bad debt reversals or significant one-off gains/losses). Performance should ideally be assessed based on underlying, repeatable operational results.
+      * **Financial Performance is Volatile/Weak/Negative IF:**
+        + Turnover is declining or stagnant without clear recovery prospects.
+        + Consistent net losses or declining profitability from core operations.
+        + Gross profit margin is eroding due to rising COGS not passed on to customers.
+        + Operating expenses are growing faster than revenue, leading to declining operating profit.
+        + Significant write-offs, impairments (beyond normal operational provisions), or restructuring costs negatively impact results.
+        + High reliance on non-recurring gains to achieve profitability. (Note: source 197 used twice)
+      * **Financial Results Impacted by Exceptional Items/Specific Events:**
+        + Clearly identify and quantify exceptional/extraordinary items (e.g., gain/loss on asset disposal, major restructuring costs, large insurance payouts, significant bad debt reversals). Analyze performance both including and excluding these items to understand underlying operational trends.
+        + Contextualize performance against specific events (e.g., COVID-19 impact, natural disasters, major regulatory changes, loss/gain of a key contract). **Be specific about the timing and nature of the impact on different financial years (e.g., linking FY20 vs FY21 performance to specific phases of COVID-19 or project cycle timings), especially if the company's year-end influences how these impacts are reported across periods.**
+
+  financial_performance_profitability:
+    title: "IV.B - Profitability Ratios"
+    description: >
+      Criteria for assessing whether profitability ratios are strong, acceptable,
+      under pressure, or weak. Covers net profit margin, EBITDA margin, ROE,
+      gross margin, and the future profitability outlook.
+    content: |
+      **B. 4.5.2 Profitability Ratios**
+
+      * **Profitability Ratios are Strong/Good IF:**
+        + Net Profit Margin is strong/acceptable for the industry (e.g. >5-10% for non-FIs; very high margins e.g. >20-30% for highly successful global tech companies). For non-profits, a consistent operational surplus. Ensure this margin is driven by core operations, not overly reliant on volatile or non-operational "Other Income."
+        + Net profit margin increased due to revenue growth exceeding cost growth, or improved operational efficiencies.
+        + EBITDA margin increased due to stronger financial performance or is consistently high from core operations.
+        + Low interest-bearing debt means profitability not significantly impacted by interest rate increases.
+        + Profitability and ratios improved, with gross profit increasing due to controlled costs.
+        + For large tech companies, return on equity (ROE) is very strong.
+      * **Profitability Ratios are Acceptable IF:**
+        + Profitability maintained, company well-positioned to remain profitable, supported by strong balance sheet/partnerships (substantiate this qualitative assessment).
+        + Margins acceptable for industry/company size, even if decreased under external pressures (explain pressures).
+        + Company's revenue at a level that should allow for continued profitability from core operations.
+        + Net profit margin increased or is stable, even if numerically low, for a low-margin industry, due to improved overall financial performance or strong cost management.
+        + Company remained sufficiently profitable to generate positive cash flow even with low profit in rand terms for very small companies.
+        + For non-profits, if operating results are breakeven or a small surplus, sufficient to maintain reserves and activities.
+      * **Profitability Ratios are Under Pressure/Deteriorated/Weak IF:**
+        + Gross margin declined.
+        + Net margin decreased (e.g. turned negative) due to substantial increase in cost of sales leading to significant gross margin decrease, or due to unsustainable reliance on disappearing "Other Income."
+        + Profitability declined due to margin squeeze. (Note: source 215 used twice)
+        + Ratios deteriorated due to losses.
+        + Operating expenses to turnover increased without corresponding revenue benefits.
+        + Very low profitability ratios risk becoming loss-making from core operations.
+        + EBITDA margin decreased significantly due to reporting a loss.
+        + Gross profit margin and net profit margin decreased due to substantial loss.
+        + For construction companies, negative project margins or overall operational losses.
+      * **Future Profitability Outlook:**
+        + Profitability depends on revenue levels and ability to manage operating costs.
+        + Profitability ratios likely under pressure from economic volatility. (Note: source 222 used twice)
+        + Goodwill write-offs ceasing can allow return to profitability if underlying operations are sound.
+        + Strong balance sheet, track record, parent/group support position company for future profitability (assess nature and certainty of support).
+        + Company could benefit from specific market trends. Incorporate relevant qualitative industry insights, such as specific demand drivers (e.g., increased need for fire safety post-incidents) or technological shifts.
+        + Profitability exposed to interest rate volatility if debt is high, but risk is low if rates are expected to decrease.
+        + Needs significant revenue increase and cost control to return to profitability if cost of sales are high and margins pressured.
+        + Higher turnover should not result in commensurate increase in operating costs as company leverages infrastructure.
+
+  financial_performance_business_activity:
+    title: "IV.C - Business Activity (Turnover Ratios)"
+    description: >
+      Criteria for assessing whether business activity and turnover ratios are
+      positive, acceptable, concerning, or weak. Also covers working capital
+      impact on activity assessment.
+    content: |
+      **C. 4.5.3 Analysis of the Business Activity (Turnover Ratios)**
+
+      * **Business Activity (Turnover Ratios) are Positive/Acceptable/Strong IF:**
+        + Turnover increased significantly due to post-COVID normalization, new market demands, general economic improvement, or gaining market share. For non-profits, stable or growing income from core activities (fees, grants). For large tech companies, strong global revenue growth across diverse segments. Explicitly connect turnover changes to these drivers.
+        + Cost of sales increase lower than turnover increase. (Note: source 231 used twice)
+        + Company's ability to maintain turnover levels is strong, balance sheet can absorb volatility.
+        + Turnover increase acceptable given market conditions or well above inflation.
+        + Industry has relatively inelastic demand or strong demand for services. Provide qualitative reasoning based on industry knowledge if possible.
+        + Gross and net profit margins stable or improved with turnover growth.
+        + Operating expense as a percentage of turnover decreased. (Note: source 235 used twice)
+        + Receivables days decreased or stable/acceptable.
+      * **Business Activity (Turnover Ratios) are Concerning/Weak IF:**
+        + Turnover is declining or stagnant, especially if market is growing.
+        + Revenue growth is significantly below inflation, indicating real terms decline. (Note: source 237 used twice)
+        + Loss of key customers or contracts impacting revenue.
+        + Asset turnover ratios are declining, indicating less efficient use of assets to generate sales (unless assets grew due to strategic, future-revenue-generating investments or significant non-operational assets like large intercompany loans).
+      * **Working Capital Impact on Activity Assessment:**
+        + Efficient working capital management (e.g., good receivables collection, optimal inventory) supports business activity by freeing up cash.
+        + Poor working capital management can constrain activity even if demand exists.
+
+  conclusion_ratio_summary:
+    title: "V.A - Key Ratio Summary"
+    description: >
+      Overall key ratio summary criteria for concluding whether company financial
+      health is positive/strong/acceptable or weak/deteriorated. Includes
+      mitigating factors for weak ratios.
+    content: |
+      **V. Conclusion**
+
+      **A. 4.6.1 Key Ratio Summary (Overall Financial Health Indicators)**
+
+      * **Company Financial Health is Positive/Strong/Acceptable IF Key Ratios Reflect:**
+        + No or low level of external interest-bearing debt (clearly distinguish from related-party or shareholder loans, and assess their terms, potentially after justified intercompany netting/adjustments ).
+        + Improved/Strong current ratio (potentially after justified intercompany adjustments, **and this adjusted ratio must be the primary one considered if material intercompany loans' short-term liquidity is questionable**). (Note: source 242 used twice)
+        + Strong/Acceptable quick ratio.
+        + Strong (negative, or short positive) cash conversion cycle. (Note: source 243 used twice)
+        + Strong liquidity position with significant cash buildup or access to substantial liquid investments.
+        + Improved/Strong EBITDA margin from core operations. (Note: source 244 used twice)
+        + Efficient trade debtor collection.
+        + Company is sufficiently/well capitalized to support ongoing operations (based on adjusted tangible net worth if necessary). For non-profits, adequate unrestricted net assets or reserves.
+        + Stable gross and net profit margin from core operations.
+        + Strong cash flow generating ability from core operations ( based on AFS-stated or robustly calculated CFO, considering impact of any major discretionary payments like dividends ).
+        + Low level of intangible assets, or intangibles are well-supported by earnings, or equity remains strong after their exclusion.
+        + For very small consulting company: No debt, strong CR/QR, no intangibles, liquid balance sheet (cash).
+        + For very large corporations: Extremely strong cash reserves, high profitability (e.g. Net Income in tens of billions of USD), manageable debt relative to earnings, and strong credit ratings from agencies like S&P and Moody's.
+      * **Company Financial Health is Weak/Deteriorated IF Key Ratios Reflect:**
+        + High levels of external interest-bearing debt.
+        + Weak or declining current and quick ratios ( that remain weak after considering reasonable intercompany adjustments, **or where an adjusted Current Ratio, after reclassifying illiquid intercompany loans, is weak despite a seemingly acceptable reported CR**).
+        + Long or deteriorating cash conversion cycle. (Note: source 253 used twice)
+        + Poor liquidity, low cash reserves.
+        + Declining or negative EBITDA/Net Profit margins from core operations. (Note: source 254 used twice)
+        + Poor receivables management, high bad debts.
+        + Weak capitalization, low or negative (adjusted tangible) net worth.
+        + Heavy reliance on non-core income or one-off gains for profitability. (Note: source 256 used twice)
+        + Negative or weak CFO from core operations.
+      * **Mitigating Factors for Weak Ratios:**
+        + Strong, formally documented, and financially credible parental/group support (e.g., guarantees, letters of comfort with clear financial backing).
+        + Recent positive changes not yet fully reflected in historical ratios (e.g., successful restructuring, new profitable contracts).
+        + Specific industry characteristics that make certain "weak" ratios normal (must be well-justified and compared to industry peers).
+
+  conclusion_overall_rating:
+    title: "V.B - Overall Rating & Conclusion"
+    description: >
+      Criteria for the overall conclusion on whether the company is financially
+      sound and able to meet commitments, or weak and potentially unable to meet
+      commitments. Covers strong and weak scenarios with detailed qualifying
+      conditions.
+    content: |
+      **B. 4.6.2 Rating of the Financial Position and Financial Performance of the Company (Overall Conclusion)**
+
+      * **Company is Strong/Financially Sound/Able to Meet Commitments IF:**
+        + Financial position is regarded as acceptable/strong with equity supported by tangible assets (or intangible assets are not a concern due to strong capital/liquidity/earnings generation, and after robust assessment of related-party balances ( **including quantifying their impact, e.g. as % of total assets, and their effect on adjusted ratios like CR**) and any justified analytical adjustments that reflect economic substance ).
+        + Equity remains strong after deducting potentially unrecoverable loans to group companies or high-risk intangibles.
+        + Company is well capitalized, has no/low external interest-bearing debt (as appropriate for industry, potentially after justified intercompany netting ), strong cash generation from core operations ( considering impact of discretionary payments like dividends ), and strong working capital.
+        + Should continue to benefit from market demand or strong market position. Support this with specific qualitative industry insights where possible (e.g., demand for essential services like fire protection).
+        + Financial position is sufficient to support the nature of the company (e.g. small consulting firm; a non-profit association with strong reserves and consistent operational surpluses allowing it to fulfil its mandate).
+        + Expected to remain profitable, consistently, from core operations. (Note: source 266 used twice)
+        + Financial position sufficiently strong albeit high level of interest-bearing debt and intangible assets, if cash generation and profitability are robust and sustainable for the industry.
+        + For globally recognized corporations, very strong credit ratings from major agencies are a key indicator.
+      * **Company is Weak/May Not Be Able to Meet Commitments IF:**
+        + Performance has been under pressure (e.g., static or declining sales/revenue, increased operating costs), even if there's potential for future improvement not yet realized.
+        + Financial performance was weak (e.g., loss compared to prior profit, or sustained losses/deficits), and revenue/profitability have been volatile without clear signs of stabilization from core operations.
+        + The company needs to stabilize revenue and profitability from its core business.
+        + Financial position is somewhat weak/very weak, and further losses will erode it, especially cash flow and liquidity (e.g., company is marginally solvent only due to shareholder loans whose terms are not formally documented or whose support is uncertain, or has a very low/negative adjusted tangible net worth, **or liquidity is heavily reliant on the recoverability of a large intercompany loan with uncertain repayment terms**).
+        + The company may not be able to meet commitments UNLESS sustainable profits (or surpluses for non-profits) from core operations and capital injections are demonstrated OR there's sufficient, legally binding, and financially credible group solvency/support. **For regulatory reporting (e.g., to SARB), if these conditions are not yet met but are hoped for, the conclusion should be that the company 'may not have the ability to meet commitments if X, Y, Z conditions are not realized' rather than stating it 'has the ability' based on contingent future events.**
+        + Financial performance was weak, with profitability reliant on exceptional gains or volatile/non-operational "Other Income" rather than core operations.
+        + Financial position is weak, and the ability to generate future profits from core operations is questionable given past performance (e.g., persistent losses over several years) and challenging economic outlook or industry-specific headwinds.
+        + Concerns exist about the parent group's ability or willingness to return to profitability or provide ongoing, reliable support if the entity is dependent.
+        + The financial position and performance of joint venture partners are weak, and the entity has significant exposure.
+        + The financial position is definitively weak, characterized by insolvency (negative net worth even after considering shareholder loans in some cases, especially a negative adjusted tangible net worth ) and/or very poor working capital ratios.
+        + The working capital and liquidity position is weak (e.g., very low current/quick ratios, minimal or no cash on hand, heavy reliance on overdrafts that have increased to fund losses).
+        + The company faces difficulty in passing cost increases on to customers.
+        + The company is at risk of further financial costs or deterioration due to pending litigation, unresolved tax liabilities, or other significant contingent liabilities.
+        + The financial position is somewhat weak primarily due to its liquidity position, but there's an articulated potential for improvement IF the company can consistently achieve and maintain profitability from core operations.
+        + The equity base, even if technically positive, is very small relative to the size of the balance sheet or operations, offering little buffer, particularly after adjustments for related-party items and high-risk intangibles.
+        + There's a high reliance on related party funding to maintain solvency or liquidity, and the ability of these related parties to continue providing support is not assured or documented.
+        + For construction companies, continued losses on projects, inability to secure new profitable work, or severe liquidity constraints due to tied-up working capital in disputed claims or slow-paying clients.
+        + **If a company has negative equity and is solely reliant on shareholder loans (even if subordinated) and recent/future profitability to remain solvent and liquid, the conclusion on its ability to meet commitments *must* be heavily qualified. It should not be a definitive 'has the ability'. Instead, state that the ability is 'contingent upon' or 'dependent on' these factors (e.g., continued subordination, sustained profits, ongoing financial support from shareholders). If these factors are not certain or if recent positive performance (e.g., one strong year after losses) has not yet demonstrated *sustained* stability, a more cautious conclusion is required, such as 'may face challenges in meeting commitments' or 'may not have the ability to meet commitments if improvements are not sustained or support falters'. Explicitly mention if unavailable recent/future financial data (e.g., next financial year's results) could materially alter the conclusion.**

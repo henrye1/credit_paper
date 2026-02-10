@@ -1,0 +1,17 @@
+{
+  "sets": {
+    "bdo_sme": {
+      "display_name": "BDO SME",
+      "description": "BDO supplier assessment prompts for SMEs",
+      "created_at": "2026-02-10T12:46:58.568979",
+      "cloned_from": null
+    },
+    "corporate_assessment": {
+      "display_name": "APR SME ",
+      "description": "SME Credit Underwriting",
+      "created_at": "2026-02-10T16:21:02.449087",
+      "cloned_from": "bdo_sme"
+    }
+  },
+  "default_set": "bdo_sme"
+}

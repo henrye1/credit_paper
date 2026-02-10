@@ -10,6 +10,7 @@ interface AssessmentState {
   pendingAiProposals: Record<number, string>
   modelChoice: string
   reportName: string | null
+  promptSet: string
 
   setAssessmentId: (id: string | null) => void
   setPhase: (phase: AssessmentState['phase']) => void
@@ -21,6 +22,7 @@ interface AssessmentState {
   clearAiProposal: (idx: number) => void
   setModelChoice: (model: string) => void
   setReportName: (name: string | null) => void
+  setPromptSet: (slug: string) => void
   reset: () => void
   advanceToNextUnapproved: () => void
 }
@@ -34,6 +36,7 @@ const initialState = {
   pendingAiProposals: {} as Record<number, string>,
   modelChoice: 'gemini-2.5-flash',
   reportName: null as string | null,
+  promptSet: '',
 }
 
 export const useAssessmentStore = create<AssessmentState>((set, get) => ({
@@ -71,6 +74,7 @@ export const useAssessmentStore = create<AssessmentState>((set, get) => ({
 
   setModelChoice: (model) => set({ modelChoice: model }),
   setReportName: (name) => set({ reportName: name }),
+  setPromptSet: (slug) => set({ promptSet: slug }),
 
   reset: () => set(initialState),
 

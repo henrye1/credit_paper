@@ -40,7 +40,8 @@ def generate_report(target_inputs_dir: Path = None,
                     api_key: str = None,
                     model: str = None,
                     report_name: str = None,
-                    log_callback=None) -> dict:
+                    log_callback=None,
+                    prompt_set: str = None) -> dict:
     """Generate a Financial Condition Assessment Report.
 
     Returns dict with keys: 'success', 'output_path', 'company_name', 'message'.
@@ -119,12 +120,15 @@ def generate_report(target_inputs_dir: Path = None,
 
         # --- Build prompt and call API ---
         log("Building prompt from YAML sections...")
+        if prompt_set:
+            log(f"Using prompt set: {prompt_set}")
         prompt_contents = build_report_prompt(
             company_name=company_name,
             business_desc_content=business_desc,
             target_md_file_obj=target_md_obj,
             target_pdf_file_objs=target_pdf_objs,
             example_files_info=example_files,
+            prompt_set=prompt_set,
         )
 
         log(f"Sending request to Gemini ({model_name})...")
