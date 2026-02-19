@@ -50,10 +50,11 @@ async def event_generator(task_id: str):
 
     while True:
         try:
-            msg = await asyncio.wait_for(q.get(), timeout=30.0)
+            msg = await asyncio.wait_for(q.get(), timeout=15.0)
         except asyncio.TimeoutError:
-            # Send keepalive to prevent connection drop
-            yield ": keepalive\n\n"
+            # Send heartbeat as a real SSE event (not just a comment)
+            # so Render's proxy recognises it as activity
+            yield "event: heartbeat\ndata: \n\n"
             continue
 
         event_type = msg.get("event", "log")

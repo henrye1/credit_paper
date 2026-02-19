@@ -29,6 +29,9 @@ export function useSSELogs(assessmentId: string | null): UseSSELogsResult {
       setLogs(prev => [...prev, `\n--- ${e.data} ---`])
     })
 
+    // Ignore heartbeat events (keepalive for proxy compatibility)
+    source.addEventListener('heartbeat', () => {})
+
     source.addEventListener('complete', () => {
       setStatus('complete')
       source.close()
