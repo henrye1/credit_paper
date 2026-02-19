@@ -89,6 +89,7 @@ def generate_report(target_inputs_dir: Path = None,
             log_callback(msg)
 
     client = GeminiClient(api_key)
+    learning_dir = None
 
     try:
         # --- File Discovery ---
