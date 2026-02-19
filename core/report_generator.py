@@ -116,13 +116,13 @@ def generate_report(target_inputs_dir: Path = None,
 
         # --- Upload target files ---
         log("Uploading target files to Gemini...")
-        target_md_obj = client.upload_file(target_md_path, f"Target Ratio ({company_name})")
+        target_md_obj = client.upload_file(target_md_path, f"Target Ratio ({company_name})", log_callback=log)
         if not target_md_obj:
             return {"success": False, "message": "Failed to upload target markdown file."}
 
         target_pdf_objs = []
         for pdf_path in target_pdf_paths:
-            obj = client.upload_file(pdf_path, f"Target AFS PDF ({company_name})")
+            obj = client.upload_file(pdf_path, f"Target AFS PDF ({company_name})", log_callback=log)
             if obj:
                 target_pdf_objs.append(obj)
 

@@ -23,10 +23,15 @@ class GeminiClient:
 
     def upload_file(self, filepath: Path, display_name: str = None,
                     retries: int = GEMINI_UPLOAD_RETRIES,
-                    delay: int = GEMINI_UPLOAD_DELAY) -> object:
+                    delay: int = GEMINI_UPLOAD_DELAY,
+                    log_callback=None) -> object:
         """Upload a file to Gemini API with retries. Returns the File object or None."""
         label = display_name or filepath.name
         uploaded_file_obj = None
+
+        def _log(msg):
+            if log_callback:
+                log_callback(msg)
 
         for attempt in range(retries):
             try:
@@ -49,6 +54,7 @@ class GeminiClient:
                     raise Exception(f"File {label} not ACTIVE. Final state: {file_resource.state.name}")
 
             except Exception as e:
+                _log(f"Upload attempt {attempt + 1}/{retries} failed for {label}: {e}")
                 if attempt < retries - 1:
                     time.sleep(delay)
                 else:
