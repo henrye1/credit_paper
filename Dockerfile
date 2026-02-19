@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend/
 COPY core/ ./core/
 COPY config/ ./config/
+COPY prompts/ ./prompts/
 COPY scripts/ ./scripts/
 
 # Copy built frontend from stage 1
