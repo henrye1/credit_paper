@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: credit-paper-agent
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/settings
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: FIRECRAWL_API_KEY
+        sync: false
+      - key: LLAMACLOUD_API_KEY
+        sync: false
