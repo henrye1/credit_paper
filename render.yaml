@@ -3,7 +3,7 @@ services:
     name: credit-paper-agent
     runtime: docker
     plan: free
-    healthCheckPath: /api/settings
+    healthCheckPath: /api/health
     envVars:
       - key: SUPABASE_URL
         sync: false

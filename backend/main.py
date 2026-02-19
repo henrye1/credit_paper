@@ -58,6 +58,12 @@ if FRONTEND_DIR.exists():
     app.add_middleware(SPAFallbackMiddleware)
 
 
+# Health check (used by Render/Railway)
+@app.get("/api/health")
+async def health():
+    return {"status": "ok"}
+
+
 # API routers
 app.include_router(assessment.router, prefix="/api/assessment", tags=["assessment"])
 app.include_router(pipeline.router, prefix="/api/pipeline", tags=["pipeline"])
