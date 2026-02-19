@@ -1,5 +1,6 @@
 """Shared Gemini API client with retry logic and file management."""
 
+import mimetypes
 import os
 import re
 import time
@@ -7,6 +8,10 @@ from pathlib import Path
 
 from google import genai
 from google.genai import types as genai_types
+
+# Ensure common types that mimetypes may not know are registered
+mimetypes.add_type("text/markdown", ".md")
+mimetypes.add_type("text/markdown", ".markdown")
 
 from config.settings import GOOGLE_API_KEY, GEMINI_UPLOAD_RETRIES, GEMINI_UPLOAD_DELAY, GEMINI_FILE_TIMEOUT
 
@@ -35,7 +40,14 @@ class GeminiClient:
 
         for attempt in range(retries):
             try:
-                uploaded_file_obj = self.client.files.upload(file=filepath)
+                mime_type, _ = mimetypes.guess_type(str(filepath))
+                upload_config = {"display_name": label}
+                if mime_type:
+                    upload_config["mime_type"] = mime_type
+                uploaded_file_obj = self.client.files.upload(
+                    file=filepath,
+                    config=upload_config,
+                )
                 # Poll until ACTIVE
                 timeout = GEMINI_FILE_TIMEOUT
                 start = time.time()
