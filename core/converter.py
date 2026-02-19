@@ -7,18 +7,6 @@ from bs4 import BeautifulSoup
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from config.settings import (REPORT_OUTPUT_DIR, AUDIT_LLM_OUTPUT_DIR,
-                              EVAL_OUTPUT_DIR, CONVERTED_REPORTS_DIR)
-
-
-def _find_all_html(directories: list[Path]) -> list[Path]:
-    """Find all HTML files across given directories."""
-    results = []
-    for d in directories:
-        if d.exists() and d.is_dir():
-            results.extend(d.glob('*.html'))
-    return results
-
 
 def _parse_html_structure(html_content: str, filename: str) -> dict:
     """Parse HTML content into a structured dictionary."""
@@ -109,18 +97,16 @@ def _parse_html_structure(html_content: str, filename: str) -> dict:
     return data
 
 
-def convert_html_to_json(html_path: Path, output_dir: Path = None) -> Path:
-    """Convert an HTML report to structured JSON."""
-    out_dir = output_dir or CONVERTED_REPORTS_DIR
-    out_dir.mkdir(parents=True, exist_ok=True)
+def convert_html_to_json(html_content: str, filename: str,
+                         output_dir: Path = None) -> dict:
+    """Convert HTML content to structured JSON.
 
-    html_content = html_path.read_text(encoding='utf-8')
+    Returns dict with 'json_data' and optionally 'output_path'.
+    """
     soup = BeautifulSoup(html_content, 'html.parser')
-
-    # Build a simpler JSON structure for the JSON output
     data = {}
     title_tag = soup.find('h1')
-    data['main_title'] = title_tag.get_text(separator='\n', strip=True) if title_tag else html_path.stem
+    data['main_title'] = title_tag.get_text(separator='\n', strip=True) if title_tag else Path(filename).stem
 
     data['sections'] = []
     container = soup.find('div', class_='report-container') or soup.body or soup
@@ -167,20 +153,29 @@ def convert_html_to_json(html_path: Path, output_dir: Path = None) -> Path:
                 if target:
                     target['content'].append({'type': 'table', 'headers': headers, 'rows': rows})
 
-    json_path = out_dir / (html_path.stem + ".json")
-    json_path.write_text(json.dumps(data, indent=4, ensure_ascii=False), encoding='utf-8')
-    return json_path
+    json_str = json.dumps(data, indent=4, ensure_ascii=False)
+
+    output_path = None
+    if output_dir:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        stem = Path(filename).stem
+        json_path = output_dir / (stem + ".json")
+        json_path.write_text(json_str, encoding='utf-8')
+        output_path = json_path
+
+    return {"json_data": data, "json_str": json_str, "output_path": output_path,
+            "filename": Path(filename).stem + ".json"}
 
 
-def convert_html_to_docx(html_path: Path, output_dir: Path = None) -> Path:
-    """Convert an HTML report to DOCX format."""
-    out_dir = output_dir or CONVERTED_REPORTS_DIR
-    out_dir.mkdir(parents=True, exist_ok=True)
+def convert_html_to_docx(html_content: str, filename: str,
+                         output_dir: Path = None) -> dict:
+    """Convert HTML content to DOCX format.
 
-    html_content = html_path.read_text(encoding='utf-8')
-    structured = _parse_html_structure(html_content, html_path.name)
+    Returns dict with 'docx_bytes' and optionally 'output_path'.
+    """
+    structured = _parse_html_structure(html_content, filename)
     if not structured:
-        raise RuntimeError(f"Could not parse HTML structure from {html_path.name}")
+        raise RuntimeError(f"Could not parse HTML structure from {filename}")
 
     doc = Document()
 
@@ -245,40 +240,58 @@ def convert_html_to_docx(html_path: Path, output_dir: Path = None) -> Path:
                 add_items(doc, h4_data.get('content', []))
         doc.add_paragraph()
 
-    docx_path = out_dir / (html_path.stem + ".docx")
-    doc.save(docx_path)
-    return docx_path
+    # Save to bytes
+    import io
+    buf = io.BytesIO()
+    doc.save(buf)
+    docx_bytes = buf.getvalue()
+
+    output_path = None
+    if output_dir:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        stem = Path(filename).stem
+        docx_path = output_dir / (stem + ".docx")
+        docx_path.write_bytes(docx_bytes)
+        output_path = docx_path
+
+    return {"docx_bytes": docx_bytes, "output_path": output_path,
+            "filename": Path(filename).stem + ".docx"}
 
 
-def convert_all_reports(html_dirs: list[Path] = None,
+def convert_all_reports(html_items: list[dict] = None,
                         output_dir: Path = None,
                         log_callback=None) -> dict:
-    """Convert all HTML reports found in the given directories.
+    """Convert a list of HTML items to JSON and DOCX.
 
+    html_items: list of dicts with 'html_content' and 'filename' keys.
     Returns dict with 'json_files' and 'docx_files' lists.
     """
-    dirs = html_dirs or [REPORT_OUTPUT_DIR, AUDIT_LLM_OUTPUT_DIR, EVAL_OUTPUT_DIR]
-    out_dir = output_dir or CONVERTED_REPORTS_DIR
-
     def log(msg):
         if log_callback:
             log_callback(msg)
 
-    html_files = _find_all_html(dirs)
+    if not html_items:
+        html_items = []
+
     json_files = []
     docx_files = []
 
-    for html_path in html_files:
-        try:
-            log(f"Converting {html_path.name} to JSON...")
-            json_files.append(convert_html_to_json(html_path, out_dir))
-        except Exception as e:
-            log(f"JSON conversion failed for {html_path.name}: {e}")
+    for item in html_items:
+        html_content = item["html_content"]
+        filename = item["filename"]
 
         try:
-            log(f"Converting {html_path.name} to DOCX...")
-            docx_files.append(convert_html_to_docx(html_path, out_dir))
+            log(f"Converting {filename} to JSON...")
+            result = convert_html_to_json(html_content, filename, output_dir)
+            json_files.append(result)
         except Exception as e:
-            log(f"DOCX conversion failed for {html_path.name}: {e}")
+            log(f"JSON conversion failed for {filename}: {e}")
+
+        try:
+            log(f"Converting {filename} to DOCX...")
+            result = convert_html_to_docx(html_content, filename, output_dir)
+            docx_files.append(result)
+        except Exception as e:
+            log(f"DOCX conversion failed for {filename}: {e}")
 
     return {"json_files": json_files, "docx_files": docx_files}

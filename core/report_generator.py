@@ -1,9 +1,10 @@
 """Stage 3: Financial Condition Report generation using Gemini."""
 
 import re
+import tempfile
 from pathlib import Path
 
-from config.settings import MODELS, REPORT_INPUTS_DIR, FS_LEARNING_INPUTS_DIR, REPORT_OUTPUT_DIR
+from config.settings import MODELS
 from core.gemini_client import GeminiClient, clean_html_response, safe_filename
 from core.prompt_builder import build_report_prompt
 
@@ -34,6 +35,36 @@ def _extract_text_from_file(filepath: Path) -> str:
     return ""
 
 
+def _download_examples_to_tempdir(tmp_dir: Path) -> Path:
+    """Download few-shot example files from Supabase storage to a temp dir.
+
+    Returns the temp dir path. Files are named {prefix}. {display_name}.{ext}.
+    """
+    from backend.services.supabase_client import get_supabase
+    from backend.services.storage_helpers import download_file
+
+    sb = get_supabase()
+    examples = sb.table("examples").select("prefix, display_name").execute()
+    if not examples.data:
+        return tmp_dir
+
+    for ex in examples.data:
+        prefix = ex["prefix"]
+        files_result = (sb.table("example_files")
+                        .select("filename, storage_path")
+                        .eq("prefix", prefix)
+                        .execute())
+        for f in files_result.data:
+            try:
+                data = download_file("examples", f["storage_path"])
+                dest = tmp_dir / f["filename"]
+                dest.write_bytes(data)
+            except Exception:
+                continue
+
+    return tmp_dir
+
+
 def generate_report(target_inputs_dir: Path = None,
                     learning_inputs_dir: Path = None,
                     output_dir: Path = None,
@@ -44,12 +75,13 @@ def generate_report(target_inputs_dir: Path = None,
                     prompt_set: str = None) -> dict:
     """Generate a Financial Condition Assessment Report.
 
-    Returns dict with keys: 'success', 'output_path', 'company_name', 'message'.
+    Returns dict with keys: 'success', 'html_content', 'report_filename',
+    'company_name', 'message'.
     """
-    target_dir = target_inputs_dir or REPORT_INPUTS_DIR
-    learning_dir = learning_inputs_dir or FS_LEARNING_INPUTS_DIR
-    out_dir = output_dir or REPORT_OUTPUT_DIR
-    out_dir.mkdir(parents=True, exist_ok=True)
+    target_dir = target_inputs_dir
+    if not target_dir:
+        raise ValueError("target_inputs_dir is required")
+
     model_name = model or MODELS["report_generation"]
 
     def log(msg):
@@ -65,7 +97,7 @@ def generate_report(target_inputs_dir: Path = None,
         business_desc_path = target_dir / 'company_business_description.txt'
 
         if not target_md_paths:
-            return {"success": False, "message": "No markdown ratio file found in report_inputs."}
+            return {"success": False, "message": "No markdown ratio file found in inputs."}
         if len(target_md_paths) > 1:
             return {"success": False, "message": "Multiple markdown files found. Provide only one."}
 
@@ -93,8 +125,15 @@ def generate_report(target_inputs_dir: Path = None,
             if obj:
                 target_pdf_objs.append(obj)
 
-        # --- Upload learning examples ---
+        # --- Download and upload learning examples ---
         example_files = []
+        if learning_inputs_dir:
+            learning_dir = learning_inputs_dir
+        else:
+            # Download examples from Supabase
+            learning_dir = Path(tempfile.mkdtemp(prefix="examples_"))
+            _download_examples_to_tempdir(learning_dir)
+
         if learning_dir.exists():
             learning_md_paths = sorted(list(learning_dir.glob('*.md')))
             learning_pdf_map = {
@@ -135,18 +174,23 @@ def generate_report(target_inputs_dir: Path = None,
         html_report = client.generate_content(model=model_name, contents=prompt_contents)
         cleaned_html = clean_html_response(html_report)
 
-        # --- Save report ---
+        # --- Determine filename ---
         if report_name:
             filename = f"{safe_filename(report_name)}.html"
         else:
             filename = f"{safe_filename(company_name)}_Financial_Condition_Report.html"
-        output_path = out_dir / filename
-        output_path.write_text(cleaned_html, encoding='utf-8')
-        log(f"Report saved to: {output_path}")
+
+        # Write to output_dir if provided (for pipeline/legacy use)
+        if output_dir:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_path = output_dir / filename
+            output_path.write_text(cleaned_html, encoding='utf-8')
+            log(f"Report saved to: {output_path}")
 
         return {
             "success": True,
-            "output_path": output_path,
+            "html_content": cleaned_html,
+            "report_filename": filename,
             "company_name": company_name,
             "message": f"Report generated successfully: {filename}",
         }
@@ -156,3 +200,7 @@ def generate_report(target_inputs_dir: Path = None,
 
     finally:
         client.cleanup_files()
+        # Clean up temp examples dir if we created one
+        if not learning_inputs_dir and learning_dir and learning_dir.exists():
+            import shutil
+            shutil.rmtree(str(learning_dir), ignore_errors=True)

@@ -86,12 +86,12 @@ export default function SettingsPage() {
       </section>
 
       <section>
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">Directories</h3>
+        <h3 className="text-lg font-semibold text-gray-700 mb-3">Storage</h3>
         <div className="space-y-2">
           {dirs.map((d: any) => (
             <div key={d.label} className="flex justify-between text-sm py-1 border-b border-gray-100">
               <span className="text-gray-600">{d.label}</span>
-              <span className="text-gray-500">{d.file_count} files</span>
+              <span className="text-gray-500">{d.file_count} items</span>
             </div>
           ))}
         </div>

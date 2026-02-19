@@ -8,6 +8,7 @@ import PromptEditorPage from './pages/PromptEditorPage'
 import ExamplesPage from './pages/ExamplesPage'
 import VersionHistoryPage from './pages/VersionHistoryPage'
 import SettingsPage from './pages/SettingsPage'
+import ReportsPage from './pages/ReportsPage'
 
 const queryClient = new QueryClient()
 
@@ -18,6 +19,7 @@ export default function App() {
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/quick-assessment" element={<QuickAssessmentPage />} />
             <Route path="/pipeline" element={<PipelinePage />} />
             <Route path="/prompts" element={<PromptEditorPage />} />

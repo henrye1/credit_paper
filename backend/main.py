@@ -1,5 +1,6 @@
 """FastAPI backend for the Credit Paper Assessment application."""
 
+import os
 import sys
 from pathlib import Path
 
@@ -21,10 +22,15 @@ FRONTEND_DIR = PROJECT_ROOT / "frontend" / "dist"
 
 app = FastAPI(title="Credit Paper Assessment", version="1.0.0")
 
-# CORS for React dev server (port 5173)
+# CORS: allow dev servers + production origin from ALLOWED_ORIGINS env var
+_origins = ["*"]
+_extra = os.getenv("ALLOWED_ORIGINS", "")
+if _extra:
+    _origins.extend([o.strip() for o in _extra.split(",") if o.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

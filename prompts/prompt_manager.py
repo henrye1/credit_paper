@@ -1,120 +1,34 @@
-"""Prompt management system with set-aware CRUD, versioning, and migration."""
+"""Prompt management system with set-aware CRUD, versioning — backed by Supabase."""
 
 import hashlib
 import json
-import shutil
-import yaml
-from pathlib import Path
 from datetime import datetime
 from difflib import unified_diff
 
-from config.settings import (
-    PROMPT_SETS_DIR, PROMPT_REGISTRY_FILE, DEFAULT_PROMPT_SET,
-    PROMPTS_CURRENT_DIR, PROMPTS_HISTORY_DIR, PROMPT_FILES,
-)
+from config.settings import DEFAULT_PROMPT_SET, PROMPT_FILES
+from backend.services.supabase_client import get_supabase
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Registry helpers
+# Internal helpers
 # ──────────────────────────────────────────────────────────────────────────────
-
-def _load_registry() -> dict:
-    if PROMPT_REGISTRY_FILE.exists():
-        return json.loads(PROMPT_REGISTRY_FILE.read_text(encoding="utf-8"))
-    return {"sets": {}, "default_set": DEFAULT_PROMPT_SET}
-
-
-def _save_registry(registry: dict) -> None:
-    PROMPT_REGISTRY_FILE.write_text(
-        json.dumps(registry, indent=2, default=str), encoding="utf-8"
-    )
-
 
 def _resolve_set(prompt_set: str | None) -> str:
     """Resolve None to the default set."""
     if prompt_set:
         return prompt_set
-    return _load_registry().get("default_set", DEFAULT_PROMPT_SET)
-
-
-def _set_current_dir(prompt_set: str) -> Path:
-    return PROMPT_SETS_DIR / prompt_set / "current"
-
-
-def _set_history_dir(prompt_set: str) -> Path:
-    return PROMPT_SETS_DIR / prompt_set / "history"
+    sb = get_supabase()
+    row = sb.table("prompt_sets").select("slug").eq("is_default", True).limit(1).execute()
+    if row.data:
+        return row.data[0]["slug"]
+    return DEFAULT_PROMPT_SET
 
 
 def _validate_set_exists(prompt_set: str) -> None:
-    registry = _load_registry()
-    if prompt_set not in registry["sets"]:
+    sb = get_supabase()
+    row = sb.table("prompt_sets").select("slug").eq("slug", prompt_set).limit(1).execute()
+    if not row.data:
         raise ValueError(f"Prompt set '{prompt_set}' not found")
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# One-time migration from flat prompts/current/ to prompts/sets/
-# ──────────────────────────────────────────────────────────────────────────────
-
-def _migrate_to_prompt_sets() -> None:
-    """Auto-migrate from legacy prompts/current/ into prompts/sets/bdo_sme/."""
-    if PROMPT_REGISTRY_FILE.exists():
-        return  # already migrated
-
-    if not PROMPTS_CURRENT_DIR.exists():
-        # Fresh install — create default set with empty structure
-        _create_set_dirs(DEFAULT_PROMPT_SET)
-        _save_registry({
-            "sets": {
-                DEFAULT_PROMPT_SET: {
-                    "display_name": "BDO SME",
-                    "description": "BDO supplier assessment prompts for SMEs",
-                    "created_at": datetime.now().isoformat(),
-                    "cloned_from": None,
-                }
-            },
-            "default_set": DEFAULT_PROMPT_SET,
-        })
-        return
-
-    # Migrate existing files
-    target_current = _set_current_dir(DEFAULT_PROMPT_SET)
-    target_current.mkdir(parents=True, exist_ok=True)
-    target_history = _set_history_dir(DEFAULT_PROMPT_SET)
-    target_history.mkdir(parents=True, exist_ok=True)
-
-    # Copy YAML files
-    for yaml_file in PROMPTS_CURRENT_DIR.glob("*.yaml"):
-        shutil.copy2(str(yaml_file), str(target_current / yaml_file.name))
-
-    # Move history subdirectories
-    if PROMPTS_HISTORY_DIR.exists():
-        for subdir in PROMPTS_HISTORY_DIR.iterdir():
-            if subdir.is_dir():
-                dest = target_history / subdir.name
-                if not dest.exists():
-                    shutil.copytree(str(subdir), str(dest))
-
-    _save_registry({
-        "sets": {
-            DEFAULT_PROMPT_SET: {
-                "display_name": "BDO SME",
-                "description": "BDO supplier assessment prompts for SMEs",
-                "created_at": datetime.now().isoformat(),
-                "cloned_from": None,
-            }
-        },
-        "default_set": DEFAULT_PROMPT_SET,
-    })
-
-
-def _create_set_dirs(slug: str) -> None:
-    """Create the directory structure for a prompt set."""
-    (_set_current_dir(slug)).mkdir(parents=True, exist_ok=True)
-    (_set_history_dir(slug)).mkdir(parents=True, exist_ok=True)
-
-
-# Run migration on import
-_migrate_to_prompt_sets()
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -123,174 +37,213 @@ _migrate_to_prompt_sets()
 
 def list_prompt_sets() -> list[dict]:
     """List all prompt sets with metadata."""
-    registry = _load_registry()
-    default = registry.get("default_set", DEFAULT_PROMPT_SET)
-    result = []
-    for slug, info in registry.get("sets", {}).items():
-        result.append({
-            "slug": slug,
-            "display_name": info.get("display_name", slug),
-            "description": info.get("description", ""),
-            "created_at": info.get("created_at"),
-            "cloned_from": info.get("cloned_from"),
-            "is_default": slug == default,
-        })
-    return result
+    sb = get_supabase()
+    rows = sb.table("prompt_sets").select("*").order("created_at").execute()
+    return [
+        {
+            "slug": r["slug"],
+            "display_name": r["display_name"],
+            "description": r.get("description", ""),
+            "created_at": r.get("created_at"),
+            "cloned_from": r.get("cloned_from"),
+            "is_default": r.get("is_default", False),
+        }
+        for r in rows.data
+    ]
 
 
 def get_prompt_set_info(prompt_set: str) -> dict:
     """Return metadata for a single set."""
-    registry = _load_registry()
-    info = registry["sets"].get(prompt_set)
-    if not info:
+    sb = get_supabase()
+    row = sb.table("prompt_sets").select("*").eq("slug", prompt_set).limit(1).execute()
+    if not row.data:
         raise ValueError(f"Prompt set '{prompt_set}' not found")
+    r = row.data[0]
     return {
-        "slug": prompt_set,
-        **info,
-        "is_default": prompt_set == registry.get("default_set"),
+        "slug": r["slug"],
+        "display_name": r["display_name"],
+        "description": r.get("description", ""),
+        "created_at": r.get("created_at"),
+        "cloned_from": r.get("cloned_from"),
+        "is_default": r.get("is_default", False),
     }
 
 
 def create_prompt_set(slug: str, display_name: str, description: str = "") -> dict:
-    """Create a new prompt set with blank YAML files."""
-    registry = _load_registry()
-    if slug in registry["sets"]:
+    """Create a new prompt set with blank prompts."""
+    sb = get_supabase()
+
+    # Check if exists
+    existing = sb.table("prompt_sets").select("slug").eq("slug", slug).limit(1).execute()
+    if existing.data:
         raise ValueError(f"Prompt set '{slug}' already exists")
 
-    _create_set_dirs(slug)
-
-    # Create blank YAML files with structure matching PROMPT_FILES
-    for key, filename in PROMPT_FILES.items():
-        blank = {
-            "metadata": {"name": key, "description": ""},
-            "sections": {},
-        }
-        filepath = _set_current_dir(slug) / filename
-        with open(filepath, "w", encoding="utf-8") as f:
-            yaml.dump(blank, f, default_flow_style=False, allow_unicode=True,
-                      sort_keys=False, width=120)
-
     entry = {
+        "slug": slug,
         "display_name": display_name,
         "description": description,
-        "created_at": datetime.now().isoformat(),
+        "is_default": False,
         "cloned_from": None,
     }
-    registry["sets"][slug] = entry
-    _save_registry(registry)
-    return {"slug": slug, **entry}
+    sb.table("prompt_sets").insert(entry).execute()
+
+    # Create blank prompts for each known prompt type
+    for key in PROMPT_FILES:
+        sb.table("prompts").insert({
+            "prompt_set": slug,
+            "prompt_name": key,
+            "metadata": {"name": key, "description": ""},
+            "sections": {},
+        }).execute()
+
+    return {"slug": slug, "display_name": display_name, "description": description,
+            "is_default": False, "cloned_from": None}
 
 
 def clone_prompt_set(source_set: str, new_slug: str, new_display_name: str,
                      new_description: str = "") -> dict:
-    """Clone all current prompt files from source into a new set."""
-    registry = _load_registry()
-    if source_set not in registry["sets"]:
-        raise ValueError(f"Source set '{source_set}' not found")
-    if new_slug in registry["sets"]:
+    """Clone all current prompts from source into a new set."""
+    sb = get_supabase()
+
+    _validate_set_exists(source_set)
+
+    existing = sb.table("prompt_sets").select("slug").eq("slug", new_slug).limit(1).execute()
+    if existing.data:
         raise ValueError(f"Prompt set '{new_slug}' already exists")
 
-    _create_set_dirs(new_slug)
-
-    # Copy current YAML files
-    src_dir = _set_current_dir(source_set)
-    dst_dir = _set_current_dir(new_slug)
-    for yaml_file in src_dir.glob("*.yaml"):
-        shutil.copy2(str(yaml_file), str(dst_dir / yaml_file.name))
-
-    entry = {
+    sb.table("prompt_sets").insert({
+        "slug": new_slug,
         "display_name": new_display_name,
         "description": new_description,
-        "created_at": datetime.now().isoformat(),
+        "is_default": False,
         "cloned_from": source_set,
-    }
-    registry["sets"][new_slug] = entry
-    _save_registry(registry)
-    return {"slug": new_slug, **entry}
+    }).execute()
+
+    # Copy prompts from source
+    source_prompts = (sb.table("prompts")
+                      .select("prompt_name, metadata, sections")
+                      .eq("prompt_set", source_set)
+                      .execute())
+    for p in source_prompts.data:
+        sb.table("prompts").insert({
+            "prompt_set": new_slug,
+            "prompt_name": p["prompt_name"],
+            "metadata": p["metadata"],
+            "sections": p["sections"],
+        }).execute()
+
+    return {"slug": new_slug, "display_name": new_display_name,
+            "description": new_description, "is_default": False,
+            "cloned_from": source_set}
 
 
 def rename_prompt_set(prompt_set: str, new_display_name: str = None,
                       new_description: str = None) -> dict:
     """Update display name and/or description of a set."""
-    registry = _load_registry()
-    if prompt_set not in registry["sets"]:
-        raise ValueError(f"Prompt set '{prompt_set}' not found")
+    _validate_set_exists(prompt_set)
+    sb = get_supabase()
+    updates = {}
     if new_display_name is not None:
-        registry["sets"][prompt_set]["display_name"] = new_display_name
+        updates["display_name"] = new_display_name
     if new_description is not None:
-        registry["sets"][prompt_set]["description"] = new_description
-    _save_registry(registry)
-    return {"slug": prompt_set, **registry["sets"][prompt_set]}
+        updates["description"] = new_description
+    if updates:
+        sb.table("prompt_sets").update(updates).eq("slug", prompt_set).execute()
+    return get_prompt_set_info(prompt_set)
 
 
 def delete_prompt_set(prompt_set: str) -> None:
     """Delete a prompt set. Cannot delete the default or only remaining set."""
-    registry = _load_registry()
-    if prompt_set not in registry["sets"]:
-        raise ValueError(f"Prompt set '{prompt_set}' not found")
-    if prompt_set == registry.get("default_set"):
+    sb = get_supabase()
+    info = get_prompt_set_info(prompt_set)
+    if info.get("is_default"):
         raise ValueError("Cannot delete the default prompt set")
-    if len(registry["sets"]) <= 1:
+
+    all_sets = sb.table("prompt_sets").select("slug").execute()
+    if len(all_sets.data) <= 1:
         raise ValueError("Cannot delete the only remaining prompt set")
 
-    # Remove directory
-    set_dir = PROMPT_SETS_DIR / prompt_set
-    if set_dir.exists():
-        shutil.rmtree(str(set_dir), ignore_errors=True)
-
-    del registry["sets"][prompt_set]
-    _save_registry(registry)
+    # CASCADE will handle prompts rows
+    sb.table("prompt_sets").delete().eq("slug", prompt_set).execute()
 
 
 def set_default_prompt_set(prompt_set: str) -> None:
     """Set a prompt set as the default."""
-    registry = _load_registry()
-    if prompt_set not in registry["sets"]:
-        raise ValueError(f"Prompt set '{prompt_set}' not found")
-    registry["default_set"] = prompt_set
-    _save_registry(registry)
+    _validate_set_exists(prompt_set)
+    sb = get_supabase()
+    # Clear existing default
+    sb.table("prompt_sets").update({"is_default": False}).eq("is_default", True).execute()
+    # Set new default
+    sb.table("prompt_sets").update({"is_default": True}).eq("slug", prompt_set).execute()
 
 
 def get_prompt_set_checksums(prompt_set: str = None) -> dict[str, str]:
-    """Compute MD5 checksums for all YAML files in a prompt set."""
+    """Compute MD5 checksums for all prompts in a set."""
     prompt_set = _resolve_set(prompt_set)
-    current_dir = _set_current_dir(prompt_set)
+    sb = get_supabase()
+    rows = (sb.table("prompts")
+            .select("prompt_name, sections")
+            .eq("prompt_set", prompt_set)
+            .execute())
     checksums = {}
-    for key, filename in PROMPT_FILES.items():
-        path = current_dir / filename
-        if path.exists():
-            checksums[key] = hashlib.md5(path.read_bytes()).hexdigest()
+    for r in rows.data:
+        content = json.dumps(r["sections"], sort_keys=True).encode("utf-8")
+        checksums[r["prompt_name"]] = hashlib.md5(content).hexdigest()
     return checksums
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Prompt CRUD (set-aware versions of original functions)
+# Prompt CRUD (set-aware)
 # ──────────────────────────────────────────────────────────────────────────────
 
 def load_prompt(prompt_name: str, prompt_set: str = None) -> dict:
-    """Load a prompt YAML file from the specified (or default) set."""
+    """Load a prompt from the specified (or default) set.
+
+    Returns dict with 'metadata' and 'sections' keys (same shape as old YAML).
+    """
     prompt_set = _resolve_set(prompt_set)
-    filepath = _set_current_dir(prompt_set) / f"{prompt_name}.yaml"
-    if not filepath.exists():
+    sb = get_supabase()
+    row = (sb.table("prompts")
+           .select("metadata, sections")
+           .eq("prompt_set", prompt_set)
+           .eq("prompt_name", prompt_name)
+           .limit(1)
+           .execute())
+    if not row.data:
         return {"metadata": {"name": prompt_name, "description": ""}, "sections": {}}
-    with open(filepath, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+    r = row.data[0]
+    return {
+        "metadata": r.get("metadata") or {"name": prompt_name, "description": ""},
+        "sections": r.get("sections") or {},
+    }
 
 
 def save_prompt(prompt_name: str, data: dict, prompt_set: str = None) -> str:
-    """Save prompt data to YAML and create a timestamped version in history.
-    Returns the timestamp string."""
+    """Save prompt data and create a timestamped version. Returns timestamp."""
     prompt_set = _resolve_set(prompt_set)
-    filepath = _set_current_dir(prompt_set) / f"{prompt_name}.yaml"
+    sb = get_supabase()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    with open(filepath, "w", encoding="utf-8") as f:
-        yaml.dump(data, f, default_flow_style=False, allow_unicode=True,
-                  sort_keys=False, width=120)
+    metadata = data.get("metadata", {"name": prompt_name, "description": ""})
+    sections = data.get("sections", {})
 
-    history_dir = _set_history_dir(prompt_set) / prompt_name
-    history_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(str(filepath), str(history_dir / f"{prompt_name}_{timestamp}.yaml"))
+    # Upsert current prompt
+    sb.table("prompts").upsert({
+        "prompt_set": prompt_set,
+        "prompt_name": prompt_name,
+        "metadata": metadata,
+        "sections": sections,
+        "updated_at": datetime.now().isoformat(),
+    }, on_conflict="prompt_set,prompt_name").execute()
+
+    # Insert history version
+    sb.table("prompt_versions").insert({
+        "prompt_set": prompt_set,
+        "prompt_name": prompt_name,
+        "timestamp": timestamp,
+        "metadata": metadata,
+        "sections": sections,
+    }).execute()
 
     return timestamp
 
@@ -298,34 +251,48 @@ def save_prompt(prompt_name: str, data: dict, prompt_set: str = None) -> str:
 def get_version_history(prompt_name: str, prompt_set: str = None) -> list[dict]:
     """List all historical versions for a prompt, newest first."""
     prompt_set = _resolve_set(prompt_set)
-    history_dir = _set_history_dir(prompt_set) / prompt_name
-    if not history_dir.exists():
-        return []
+    sb = get_supabase()
+    rows = (sb.table("prompt_versions")
+            .select("timestamp, created_at")
+            .eq("prompt_set", prompt_set)
+            .eq("prompt_name", prompt_name)
+            .order("created_at", desc=True)
+            .execute())
 
     versions = []
-    for f in sorted(history_dir.glob(f"{prompt_name}_*.yaml"), reverse=True):
-        ts_part = f.stem.replace(f"{prompt_name}_", "")
+    for r in rows.data:
+        ts = r["timestamp"]
         try:
-            dt = datetime.strptime(ts_part, "%Y%m%d_%H%M%S")
-            versions.append({
-                "timestamp": ts_part,
-                "display_time": dt.strftime("%Y-%m-%d %H:%M:%S"),
-                "filename": f.name,
-                "path": f,
-            })
+            dt = datetime.strptime(ts, "%Y%m%d_%H%M%S")
+            display_time = dt.strftime("%Y-%m-%d %H:%M:%S")
         except ValueError:
-            continue
+            display_time = ts
+        versions.append({
+            "timestamp": ts,
+            "display_time": display_time,
+            "filename": f"{prompt_name}_{ts}.yaml",
+        })
     return versions
 
 
 def load_version(prompt_name: str, timestamp: str, prompt_set: str = None) -> dict:
     """Load a specific historical version of a prompt."""
     prompt_set = _resolve_set(prompt_set)
-    filepath = _set_history_dir(prompt_set) / prompt_name / f"{prompt_name}_{timestamp}.yaml"
-    if not filepath.exists():
+    sb = get_supabase()
+    row = (sb.table("prompt_versions")
+           .select("metadata, sections")
+           .eq("prompt_set", prompt_set)
+           .eq("prompt_name", prompt_name)
+           .eq("timestamp", timestamp)
+           .limit(1)
+           .execute())
+    if not row.data:
         return {}
-    with open(filepath, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+    r = row.data[0]
+    return {
+        "metadata": r.get("metadata", {}),
+        "sections": r.get("sections", {}),
+    }
 
 
 def revert_to_version(prompt_name: str, timestamp: str, prompt_set: str = None) -> str:

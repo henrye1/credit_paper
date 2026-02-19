@@ -1,16 +1,10 @@
-"""Settings endpoints — API keys, models, directories."""
-
-from pathlib import Path
+"""Settings endpoints — API keys, models, storage info."""
 
 from fastapi import APIRouter
 
-from config.settings import (
-    GOOGLE_API_KEY, FIRECRAWL_API_KEY, MODELS,
-    REPORT_INPUTS_DIR, FS_LEARNING_INPUTS_DIR, REPORT_OUTPUT_DIR,
-    AUDIT_LLM_INPUT_DIR, AUDIT_LLM_OUTPUT_DIR, EVAL_INPUT_DIR,
-    EVAL_OUTPUT_DIR, CONVERTED_REPORTS_DIR, ASSESSMENTS_DIR, PROJECT_ROOT,
-)
+from config.settings import GOOGLE_API_KEY, FIRECRAWL_API_KEY, MODELS, PROJECT_ROOT
 from backend.schemas import ApiKeysRequest, DirectoryInfo
+from backend.services.supabase_client import get_supabase
 
 router = APIRouter()
 
@@ -21,12 +15,6 @@ def _mask_key(key: str) -> str:
     if len(key) <= 8:
         return "****"
     return key[:4] + "****" + key[-4:]
-
-
-def _count_files(directory: Path) -> int:
-    if not directory.exists():
-        return 0
-    return sum(1 for f in directory.iterdir() if f.is_file())
 
 
 @router.get("/keys")
@@ -41,7 +29,10 @@ async def get_api_keys():
 
 @router.put("/keys")
 async def update_api_keys(body: ApiKeysRequest):
-    """Update API keys in .env file."""
+    """Update API keys in .env file.
+
+    Note: On Railway, env vars should be set via the dashboard instead.
+    """
     env_path = PROJECT_ROOT / ".env"
 
     # Read existing .env
@@ -76,18 +67,40 @@ async def get_models():
 
 @router.get("/directories")
 async def get_directories() -> list[DirectoryInfo]:
-    dirs = [
-        ("Report Inputs", REPORT_INPUTS_DIR),
-        ("Learning Examples", FS_LEARNING_INPUTS_DIR),
-        ("Report Output", REPORT_OUTPUT_DIR),
-        ("Audit Input", AUDIT_LLM_INPUT_DIR),
-        ("Audit Output", AUDIT_LLM_OUTPUT_DIR),
-        ("Eval Input", EVAL_INPUT_DIR),
-        ("Eval Output", EVAL_OUTPUT_DIR),
-        ("Converted Reports", CONVERTED_REPORTS_DIR),
-        ("Assessments", ASSESSMENTS_DIR),
-    ]
+    """Return counts of stored items from Supabase instead of local dirs."""
+    sb = get_supabase()
+
+    # Count reports by type
+    type_counts = {}
+    try:
+        rows = sb.table("reports").select("report_type").execute()
+        for r in rows.data:
+            rt = r.get("report_type", "generated")
+            type_counts[rt] = type_counts.get(rt, 0) + 1
+    except Exception:
+        pass
+
+    # Count examples
+    example_count = 0
+    try:
+        rows = sb.table("example_files").select("id").execute()
+        example_count = len(rows.data)
+    except Exception:
+        pass
+
+    # Count assessments
+    assessment_count = 0
+    try:
+        rows = sb.table("assessments").select("id").execute()
+        assessment_count = len(rows.data)
+    except Exception:
+        pass
+
     return [
-        DirectoryInfo(label=label, path=str(d), file_count=_count_files(d))
-        for label, d in dirs
+        DirectoryInfo(label="Generated Reports", path="reports/generated", file_count=type_counts.get("generated", 0)),
+        DirectoryInfo(label="Learning Examples", path="examples/", file_count=example_count),
+        DirectoryInfo(label="Audit Output", path="reports/audit_output", file_count=type_counts.get("audit", 0)),
+        DirectoryInfo(label="Comparison Output", path="reports/eval_output", file_count=type_counts.get("comparison", 0)),
+        DirectoryInfo(label="Converted Reports", path="reports/converted", file_count=type_counts.get("converted", 0)),
+        DirectoryInfo(label="Assessments", path="assessments", file_count=assessment_count),
     ]

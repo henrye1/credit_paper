@@ -2,12 +2,12 @@
 
 import asyncio
 import json
+import tempfile
 from pathlib import Path
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
 
-from config.settings import REPORT_INPUTS_DIR, REPORT_OUTPUT_DIR, ASSESSMENTS_DIR
 from backend.schemas import (
     AssessmentStartResponse, AssessmentStatusResponse, SectionsResponse,
     SectionSchema, SectionUpdateRequest, AiUpdateResponse,
@@ -16,6 +16,10 @@ from backend.schemas import (
 from backend.services.assessment_service import (
     create_assessment, run_pipeline_sync, get_state, save_state,
     archive_assessment, clean_working_dir, list_past_assessments,
+    delete_assessment,
+)
+from backend.services.storage_helpers import (
+    upload_file, download_file, temp_dir,
 )
 from backend.services.log_manager import create_log_queue, event_generator
 
@@ -33,17 +37,17 @@ async def start_assessment(
     prompt_set: str = Form(""),
 ):
     """Upload files and start the generation pipeline."""
-    # Clean working directory
-    clean_working_dir()
+    # Save uploaded files to a temporary directory
+    work_dir = Path(tempfile.mkdtemp())
 
-    # Save uploaded files to working directory
-    work_dir = REPORT_INPUTS_DIR
     ratio_dest = work_dir / ratio_file.filename
     ratio_dest.write_bytes(await ratio_file.read())
+    input_paths = [ratio_dest]
 
     for pdf in pdf_files:
         pdf_dest = work_dir / pdf.filename
         pdf_dest.write_bytes(await pdf.read())
+        input_paths.append(pdf_dest)
 
     # Create assessment (empty string → None so prompt_manager resolves default)
     assessment_id = create_assessment(
@@ -55,7 +59,9 @@ async def start_assessment(
     create_log_queue(assessment_id)
 
     loop = asyncio.get_event_loop()
-    background_tasks.add_task(loop.run_in_executor, None, run_pipeline_sync, assessment_id)
+    background_tasks.add_task(
+        loop.run_in_executor, None, run_pipeline_sync, assessment_id, input_paths
+    )
 
     return AssessmentStartResponse(assessment_id=assessment_id)
 
@@ -184,11 +190,12 @@ async def ai_update_section(
 
     section = sections[section_idx]
 
-    # Save evidence files temporarily
+    # Save evidence files to temp dir
     temp_paths = []
+    temp_evidence_dir = Path(tempfile.mkdtemp())
     for ef in evidence_files:
         if ef.filename:
-            temp_path = REPORT_INPUTS_DIR / f"_temp_evidence_{ef.filename}"
+            temp_path = temp_evidence_dir / ef.filename
             temp_path.write_bytes(await ef.read())
             temp_paths.append(temp_path)
 
@@ -218,9 +225,8 @@ async def ai_update_section(
     )
 
     # Cleanup temp files
-    for tp in temp_paths:
-        if tp.exists():
-            tp.unlink()
+    import shutil
+    shutil.rmtree(str(temp_evidence_dir), ignore_errors=True)
 
     if result["success"]:
         # Store pending proposal
@@ -303,20 +309,30 @@ async def finalize_assessment(assessment_id: str):
         "sections": sections,
     })
 
-    # Write back to report_output
+    # Upload final report to reports bucket too
     report_filename = state.get("report_filename")
     if report_filename:
-        output_path = REPORT_OUTPUT_DIR / report_filename
-        output_path.write_text(final_html, encoding="utf-8")
+        upload_file("reports", f"generated/{report_filename}",
+                    final_html.encode("utf-8"), "text/html")
+        # Track in reports table
+        from backend.services.supabase_client import get_supabase
+        sb = get_supabase()
+        sb.table("reports").upsert({
+            "filename": report_filename,
+            "company_name": state.get("company_name", ""),
+            "storage_path": f"generated/{report_filename}",
+            "size_bytes": len(final_html.encode("utf-8")),
+            "report_type": "generated",
+        }, on_conflict="filename").execute()
 
-    # Archive with full provenance (original + final + metadata + changes)
+    # Archive with full provenance
     result = archive_assessment(assessment_id, final_html=final_html)
 
     # Update state
     state["phase"] = "complete"
     save_state(assessment_id)
 
-    # Clean working dir
+    # No-op clean
     clean_working_dir()
 
     return FinalizeResponse(
@@ -330,16 +346,7 @@ async def finalize_assessment(assessment_id: str):
 @router.delete("/{assessment_id}")
 async def discard_assessment(assessment_id: str):
     """Discard an assessment."""
-    state = get_state(assessment_id)
-    if state:
-        import shutil
-        assessment_dir = ASSESSMENTS_DIR / assessment_id
-        if assessment_dir.exists():
-            shutil.rmtree(str(assessment_dir), ignore_errors=True)
-        from backend.services.assessment_service import _assessments
-        _assessments.pop(assessment_id, None)
-
-    clean_working_dir()
+    delete_assessment(assessment_id)
     return {"success": True}
 
 
@@ -351,14 +358,13 @@ async def get_past_assessments():
 
 @router.get("/past/{name}/report")
 async def get_past_report(name: str):
-    """Get a past assessment's HTML report content."""
-    assessment_dir = ASSESSMENTS_DIR / name
-    if not assessment_dir.exists():
-        raise HTTPException(404, "Assessment not found")
-
-    html_files = list(assessment_dir.glob("*.html"))
-    if not html_files:
-        raise HTTPException(404, "No report found in assessment")
-
-    content = html_files[0].read_text(encoding="utf-8")
-    return {"html": content, "filename": html_files[0].name}
+    """Get a past assessment's HTML report content from storage."""
+    # Try final first, then original
+    for filename in ["final_report.html", "original_report.html"]:
+        try:
+            data = download_file("assessment-files", f"{name}/{filename}")
+            html = data.decode("utf-8")
+            return {"html": html, "filename": filename}
+        except Exception:
+            continue
+    raise HTTPException(404, "No report found in assessment")

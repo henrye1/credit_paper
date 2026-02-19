@@ -9,38 +9,25 @@ load_dotenv()
 
 # --- Project Paths ---
 PROJECT_ROOT = Path(__file__).parent.parent
-DATA_DIR = PROJECT_ROOT / "data"
 
-REPORT_INPUTS_DIR = DATA_DIR / "report_inputs"
-FS_LEARNING_INPUTS_DIR = DATA_DIR / "fs_learning_inputs"
-REPORT_OUTPUT_DIR = DATA_DIR / "report_output"
-AUDIT_LLM_INPUT_DIR = DATA_DIR / "audit_llm_input"
-AUDIT_LLM_OUTPUT_DIR = DATA_DIR / "audit_llm_output"
-EVAL_INPUT_DIR = DATA_DIR / "eval_input"
-EVAL_OUTPUT_DIR = DATA_DIR / "eval_output"
-CONVERTED_REPORTS_DIR = DATA_DIR / "converted_reports"
-ASSESSMENTS_DIR = DATA_DIR / "assessments"
-
+# Prompt filesystem paths (used only by seed script to read existing YAML)
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
 PROMPT_SETS_DIR = PROMPTS_DIR / "sets"
-PROMPT_REGISTRY_FILE = PROMPT_SETS_DIR / "_registry.json"
-DEFAULT_PROMPT_SET = "bdo_sme"
 
-# Legacy paths (used for one-time migration to prompt sets)
+# Legacy paths (used only by seed script for one-time migration)
 PROMPTS_CURRENT_DIR = PROMPTS_DIR / "current"
 PROMPTS_HISTORY_DIR = PROMPTS_DIR / "history"
 
-# Ensure all data directories exist
-for d in [REPORT_INPUTS_DIR, FS_LEARNING_INPUTS_DIR, REPORT_OUTPUT_DIR,
-          AUDIT_LLM_INPUT_DIR, AUDIT_LLM_OUTPUT_DIR, EVAL_INPUT_DIR,
-          EVAL_OUTPUT_DIR, CONVERTED_REPORTS_DIR, ASSESSMENTS_DIR,
-          PROMPT_SETS_DIR]:
-    d.mkdir(parents=True, exist_ok=True)
+DEFAULT_PROMPT_SET = "bdo_sme"
 
 # --- API Keys ---
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 LLAMACLOUD_API_KEY = os.getenv("LLAMACLOUD_API_KEY", "")
 FIRECRAWL_API_KEY = os.getenv("FIRECRAWL_API_KEY", "")
+
+# --- Supabase ---
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 
 # --- Model Configuration ---
 MODELS = {
@@ -66,3 +53,26 @@ GEMINI_FILE_TIMEOUT = 300
 FIRECRAWL_POLL_INTERVAL = 10
 FIRECRAWL_POLL_MAX_ATTEMPTS = 18
 SUPPORTED_PARSE_EXTENSIONS = [".xlsx", ".xlsm"]
+
+# --- Legacy directory paths (used by Streamlit UI — app.py + pages/) ---
+# These are NOT used by the FastAPI backend, which uses Supabase for all storage.
+DATA_DIR = PROJECT_ROOT / "data"
+REPORT_INPUTS_DIR = DATA_DIR / "report_inputs"
+FS_LEARNING_INPUTS_DIR = DATA_DIR / "fs_learning_inputs"
+REPORT_OUTPUT_DIR = DATA_DIR / "report_output"
+AUDIT_LLM_INPUT_DIR = DATA_DIR / "audit_llm_input"
+AUDIT_LLM_OUTPUT_DIR = DATA_DIR / "audit_llm_output"
+EVAL_INPUT_DIR = DATA_DIR / "eval_input"
+EVAL_OUTPUT_DIR = DATA_DIR / "eval_output"
+CONVERTED_REPORTS_DIR = DATA_DIR / "converted_reports"
+ASSESSMENTS_DIR = DATA_DIR / "assessments"
+PROMPT_REGISTRY_FILE = PROMPT_SETS_DIR / "_registry.json"
+
+# Auto-create legacy dirs only when they're on a real filesystem (local dev)
+for _d in [REPORT_INPUTS_DIR, FS_LEARNING_INPUTS_DIR, REPORT_OUTPUT_DIR,
+           AUDIT_LLM_INPUT_DIR, AUDIT_LLM_OUTPUT_DIR, EVAL_INPUT_DIR,
+           EVAL_OUTPUT_DIR, CONVERTED_REPORTS_DIR, ASSESSMENTS_DIR]:
+    try:
+        _d.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass  # Ephemeral filesystem (Railway) — dirs not needed

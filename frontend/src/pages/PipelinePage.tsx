@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import LogStream from '../components/pipeline/LogStream'
 import { useSSELogs } from '../hooks/useSSELogs'
 
@@ -17,12 +17,20 @@ export default function PipelinePage() {
   const [modelAudit, setModelAudit] = useState('gemini-2.5-flash')
   const [runId, setRunId] = useState<string | null>(null)
   const [running, setRunning] = useState(false)
+  const [files, setFiles] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { logs, status } = useSSELogs(runId)
 
   const toggleStage = (id: string) => {
     setSelectedStages(prev =>
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     )
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files))
+    }
   }
 
   const handleRun = async () => {
@@ -32,11 +40,15 @@ export default function PipelinePage() {
       form.append('stages', selectedStages.join(','))
       form.append('model_report', modelReport)
       form.append('model_audit', modelAudit)
+      for (const f of files) {
+        form.append('files', f)
+      }
       const res = await fetch('/api/pipeline/run', { method: 'POST', body: form })
       const data = await res.json()
       setRunId(data.run_id)
-    } catch (e: any) {
-      alert(`Error: ${e.message}`)
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      alert(`Error: ${msg}`)
     }
     setRunning(false)
   }
@@ -44,9 +56,25 @@ export default function PipelinePage() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <h2 className="text-2xl font-bold text-gray-800 mb-2">Dev Pipeline</h2>
-      <p className="text-gray-600 mb-6">Run individual pipeline stages with full control.</p>
+      <p className="text-gray-600 mb-6">Upload files and run individual pipeline stages.</p>
 
       <div className="space-y-4 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Input Files</label>
+          <p className="text-xs text-gray-500 mb-2">Upload Excel (.xlsx/.xlsm), PDF, and DOCX files for processing.</p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".xlsx,.xlsm,.pdf,.docx,.txt"
+            onChange={handleFileChange}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          {files.length > 0 && (
+            <p className="text-xs text-gray-500 mt-1">{files.length} file(s) selected</p>
+          )}
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Select Stages</label>
           <div className="space-y-2">

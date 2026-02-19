@@ -1,51 +1,86 @@
-"""Assessment pipeline orchestration — wraps core modules for async execution."""
+"""Assessment pipeline orchestration — Supabase-backed state + storage."""
 
 import json
-import shutil
+import tempfile
 import traceback
 from datetime import datetime
 from pathlib import Path
 
-from config.settings import (
-    REPORT_INPUTS_DIR, REPORT_OUTPUT_DIR, ASSESSMENTS_DIR,
+from backend.services.supabase_client import get_supabase
+from backend.services.storage_helpers import (
+    upload_file, download_file, delete_files, list_files, temp_dir,
 )
 from backend.services.log_manager import create_log_queue, push_log
 
 
-# In-memory assessment state (also persisted to state.json)
+# In-memory cache for active sessions (avoids round-trips during generation)
 _assessments: dict[str, dict] = {}
 
-
-def _state_file(assessment_id: str) -> Path:
-    return ASSESSMENTS_DIR / assessment_id / "state.json"
-
-
-def _assessment_dir(assessment_id: str) -> Path:
-    return ASSESSMENTS_DIR / assessment_id
+# Columns to persist in the assessments table
+_DB_COLUMNS = [
+    "id", "phase", "model_choice", "skip_biz_desc",
+    "head_html", "sections", "pending_ai_proposals", "chat_histories",
+    "report_filename", "report_name", "company_name", "prompt_set",
+    "created_at", "generated_at", "finalized_at",
+    "prompt_checksums", "input_files", "sections_modified",
+    "sections_unmodified", "changes",
+]
 
 
 def save_state(assessment_id: str):
-    """Persist assessment state to JSON file."""
+    """Persist assessment state to Supabase."""
     state = _assessments.get(assessment_id)
     if not state:
         return
-    path = _state_file(assessment_id)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    # Write a copy without non-serializable fields
-    serializable = {k: v for k, v in state.items() if k != "_queue"}
-    path.write_text(json.dumps(serializable, indent=2, default=str), encoding="utf-8")
+    sb = get_supabase()
+    row = {"id": assessment_id}
+    for col in _DB_COLUMNS:
+        if col == "id":
+            continue
+        val = state.get(col if col != "id" else "assessment_id")
+        # Map internal key names to DB columns
+        if col == "id":
+            val = assessment_id
+        else:
+            val = state.get(col)
+        if val is not None:
+            row[col] = val
+    sb.table("assessments").upsert(row, on_conflict="id").execute()
 
 
 def load_state(assessment_id: str) -> dict | None:
-    """Load assessment state from JSON file."""
+    """Load assessment state from cache or Supabase."""
     if assessment_id in _assessments:
         return _assessments[assessment_id]
-    path = _state_file(assessment_id)
-    if path.exists():
-        state = json.loads(path.read_text(encoding="utf-8"))
-        _assessments[assessment_id] = state
-        return state
-    return None
+    sb = get_supabase()
+    result = sb.table("assessments").select("*").eq("id", assessment_id).limit(1).execute()
+    if not result.data:
+        return None
+    row = result.data[0]
+    state = {
+        "assessment_id": row["id"],
+        "phase": row.get("phase", "generating"),
+        "model_choice": row.get("model_choice"),
+        "skip_biz_desc": row.get("skip_biz_desc", False),
+        "head_html": row.get("head_html", ""),
+        "sections": row.get("sections") or [],
+        "pending_ai_proposals": row.get("pending_ai_proposals") or {},
+        "chat_histories": row.get("chat_histories") or {},
+        "report_filename": row.get("report_filename"),
+        "report_name": row.get("report_name"),
+        "company_name": row.get("company_name"),
+        "prompt_set": row.get("prompt_set"),
+        "created_at": row.get("created_at"),
+        "generated_at": row.get("generated_at"),
+        "finalized_at": row.get("finalized_at"),
+        "prompt_checksums": row.get("prompt_checksums"),
+        "input_files": row.get("input_files") or [],
+        "sections_modified": row.get("sections_modified"),
+        "sections_unmodified": row.get("sections_unmodified"),
+        "changes": row.get("changes"),
+    }
+    _assessments[assessment_id] = state
+    return state
 
 
 def get_state(assessment_id: str) -> dict | None:
@@ -81,11 +116,11 @@ def create_assessment(ratio_filename: str, model: str, skip_biz_desc: bool,
     return assessment_id
 
 
-def run_pipeline_sync(assessment_id: str):
+def run_pipeline_sync(assessment_id: str, input_file_paths: list[Path]):
     """Run the 3-stage Quick Assessment pipeline synchronously.
 
+    input_file_paths: list of local temp file paths (Excel + PDFs) already on disk.
     This is executed in a thread pool by the router.
-    Pushes log events to the SSE queue.
     """
     state = get_state(assessment_id)
     if not state:
@@ -96,18 +131,17 @@ def run_pipeline_sync(assessment_id: str):
         push_log(assessment_id, "log", msg)
 
     try:
-        work_dir = REPORT_INPUTS_DIR
+        # Identify file types from the temp paths
+        excel_files = [p for p in input_file_paths if p.suffix.lower() in [".xlsx", ".xlsm"]]
+        pdf_files = [p for p in input_file_paths if p.suffix.lower() == ".pdf"]
+        work_dir = input_file_paths[0].parent if input_file_paths else Path(tempfile.gettempdir())
 
         # Stage 1: Parse Excel
         push_log(assessment_id, "stage", "Parsing Excel file...")
         from core.parser import parse_excel_to_markdown
 
-        excel_files = [
-            f for f in work_dir.iterdir()
-            if f.is_file() and f.suffix.lower() in [".xlsx", ".xlsm"]
-        ]
         if not excel_files:
-            push_log(assessment_id, "error", "No Excel file found in working directory")
+            push_log(assessment_id, "error", "No Excel file found in uploads")
             state["phase"] = "error"
             save_state(assessment_id)
             return
@@ -133,6 +167,7 @@ def run_pipeline_sync(assessment_id: str):
         from core.report_generator import generate_report
 
         result = generate_report(
+            target_inputs_dir=work_dir,
             model=state.get("model_choice", "gemini-2.5-flash"),
             report_name=state.get("report_name"),
             log_callback=log,
@@ -144,27 +179,16 @@ def run_pipeline_sync(assessment_id: str):
             save_state(assessment_id)
             return
 
-        log(f"Report generated: {result.get('output_path', '')}")
+        log(f"Report generated successfully")
         state["company_name"] = result.get("company_name", "")
         state["generated_at"] = datetime.now().isoformat()
 
         # Stage 4: Parse into sections
         push_log(assessment_id, "stage", "Preparing review...")
+        html_content = result.get("html_content", "")
+        report_filename = result.get("report_filename", "report.html")
+
         from core.report_sections import parse_report_to_sections
-
-        html_reports = sorted(
-            REPORT_OUTPUT_DIR.glob("*.html"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
-        if not html_reports:
-            push_log(assessment_id, "error", "No HTML report found after generation")
-            state["phase"] = "error"
-            save_state(assessment_id)
-            return
-
-        report_path = html_reports[0]
-        html_content = report_path.read_text(encoding="utf-8")
         parsed = parse_report_to_sections(html_content)
 
         if not parsed["sections"]:
@@ -175,22 +199,29 @@ def run_pipeline_sync(assessment_id: str):
 
         log(f"Report parsed into {len(parsed['sections'])} sections.")
 
-        # Save original AI-generated report before any human edits
-        assess_dir = _assessment_dir(assessment_id)
-        assess_dir.mkdir(parents=True, exist_ok=True)
-        (assess_dir / "original_report.html").write_text(
-            html_content, encoding="utf-8"
+        # Upload original report to storage
+        upload_file(
+            "assessment-files",
+            f"{assessment_id}/original_report.html",
+            html_content.encode("utf-8"),
+            "text/html",
         )
 
-        # Copy input files early so they're preserved even if user abandons
-        _copy_inputs(assess_dir)
+        # Upload input files to storage
+        input_names = []
+        for fp in input_file_paths:
+            if fp.exists():
+                storage_path = f"{assessment_id}/inputs/{fp.name}"
+                upload_file("assessment-files", storage_path, fp.read_bytes())
+                input_names.append(fp.name)
 
         state["phase"] = "review"
         state["head_html"] = parsed["head_html"]
         state["sections"] = parsed["sections"]
-        state["report_filename"] = report_path.name
+        state["report_filename"] = report_filename
         state["pending_ai_proposals"] = {}
         state["chat_histories"] = {}
+        state["input_files"] = input_names
         save_state(assessment_id)
 
         push_log(assessment_id, "done", json.dumps({
@@ -204,26 +235,8 @@ def run_pipeline_sync(assessment_id: str):
         save_state(assessment_id)
 
 
-def _copy_inputs(assessment_dir: Path):
-    """Copy current working input files to assessment inputs/ subdirectory."""
-    inputs_subdir = assessment_dir / "inputs"
-    inputs_subdir.mkdir(exist_ok=True)
-    for f in REPORT_INPUTS_DIR.iterdir():
-        if f.is_file():
-            dest_name = f.name
-            if len(dest_name) > 60:
-                dest_name = f.stem[:50] + f.suffix
-            dest = inputs_subdir / dest_name
-            if not dest.exists():
-                shutil.copy2(str(f), str(dest))
-
-
 def _compute_changes(state: dict) -> dict:
-    """Compute section-level change summary for the assessment.
-
-    Returns a dict with per-section change info and an overall summary.
-    Useful for monitoring quality and identifying prompt improvement areas.
-    """
+    """Compute section-level change summary for the assessment."""
     sections = state.get("sections", [])
     chat_histories = state.get("chat_histories", {})
     changes = []
@@ -236,7 +249,6 @@ def _compute_changes(state: dict) -> dict:
         if modified:
             modified_count += 1
 
-        # Determine edit type from chat histories
         has_ai_history = str(i) in chat_histories and len(chat_histories[str(i)]) > 0
         if modified and has_ai_history:
             edit_type = "ai_assisted"
@@ -264,137 +276,101 @@ def _compute_changes(state: dict) -> dict:
 
 
 def archive_assessment(assessment_id: str, final_html: str = None) -> dict:
-    """Archive the finalized assessment with full provenance for labelling.
+    """Archive the finalized assessment with full provenance.
 
-    Saves:
-      - inputs/              (Excel, PDFs, business desc, parsed markdown)
-      - original_report.html (AI-generated, before human edits)
-      - final_report.html    (human-reviewed, after edits + approval)
-      - metadata.json        (model, timestamps, prompt versions, change stats)
-      - changes.json         (per-section change summary)
-      - state.json           (full state including original_html + html per section)
+    Uploads final report to storage and writes metadata to the DB row.
     """
     state = get_state(assessment_id)
     if not state:
         return {"success": False, "message": "Assessment not found"}
 
-    assess_dir = _assessment_dir(assessment_id)
-    assess_dir.mkdir(parents=True, exist_ok=True)
-
-    # Ensure inputs are copied (may already be done during pipeline)
-    _copy_inputs(assess_dir)
-
-    # Save final human-reviewed report
+    # Upload final report to storage
     if final_html:
-        (assess_dir / "final_report.html").write_text(final_html, encoding="utf-8")
-    else:
-        # Fallback: copy from report_output
-        report_filename = state.get("report_filename")
-        if report_filename:
-            report_src = REPORT_OUTPUT_DIR / report_filename
-            if report_src.exists():
-                shutil.copy2(str(report_src), str(assess_dir / "final_report.html"))
+        upload_file(
+            "assessment-files",
+            f"{assessment_id}/final_report.html",
+            final_html.encode("utf-8"),
+            "text/html",
+        )
 
-    # If original_report.html wasn't saved during pipeline (legacy), save from original sections
-    if not (assess_dir / "original_report.html").exists():
-        from core.report_sections import reassemble_report_html
-        original_sections = []
-        for s in state.get("sections", []):
-            original_sections.append({**s, "html": s.get("original_html", s["html"])})
-        original_html = reassemble_report_html({
-            "head_html": state.get("head_html", ""),
-            "body_prefix": "",
-            "sections": original_sections,
-        })
-        (assess_dir / "original_report.html").write_text(original_html, encoding="utf-8")
-
-    # Compute and save section-level changes
+    # Compute changes
     changes = _compute_changes(state)
-    (assess_dir / "changes.json").write_text(
-        json.dumps(changes, indent=2), encoding="utf-8"
-    )
 
-    # Record finalization timestamp
     state["finalized_at"] = datetime.now().isoformat()
-    save_state(assessment_id)
-
-    # Save metadata
-    inputs_dir = assess_dir / "inputs"
-    input_files = [f.name for f in inputs_dir.iterdir() if f.is_file()] if inputs_dir.exists() else []
+    state["sections_modified"] = changes["summary"]["sections_modified"]
+    state["sections_unmodified"] = changes["summary"]["sections_unmodified"]
+    state["changes"] = changes
 
     from prompts.prompt_manager import get_prompt_set_checksums
+    state["prompt_checksums"] = get_prompt_set_checksums(state.get("prompt_set"))
 
-    metadata = {
-        "assessment_id": assessment_id,
-        "company_name": state.get("company_name", ""),
-        "model": state.get("model_choice", ""),
-        "prompt_set": state.get("prompt_set"),
-        "created_at": state.get("created_at"),
-        "generated_at": state.get("generated_at"),
-        "finalized_at": state.get("finalized_at"),
-        "prompt_checksums": get_prompt_set_checksums(state.get("prompt_set")),
-        "input_files": input_files,
-        "section_count": changes["summary"]["total_sections"],
-        "sections_modified": changes["summary"]["sections_modified"],
-        "sections_unmodified": changes["summary"]["sections_unmodified"],
-    }
-    (assess_dir / "metadata.json").write_text(
-        json.dumps(metadata, indent=2), encoding="utf-8"
-    )
+    save_state(assessment_id)
 
     return {
         "success": True,
-        "report_path": str(assess_dir),
+        "report_path": assessment_id,
         "report_name": state.get("report_name") or state.get("report_filename"),
     }
 
 
 def clean_working_dir():
-    """Remove working files from report_inputs."""
-    for f in REPORT_INPUTS_DIR.iterdir():
-        if f.is_file() and f.suffix.lower() in [".xlsx", ".xlsm", ".pdf", ".md", ".txt"]:
-            f.unlink()
+    """No-op — temp files are managed by context managers now."""
+    pass
 
 
 def list_past_assessments() -> list[dict]:
-    """List all past assessments with metadata when available."""
-    result = []
-    if not ASSESSMENTS_DIR.exists():
-        return result
-    for d in sorted(ASSESSMENTS_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True):
-        if not d.is_dir():
-            continue
+    """List all past assessments from Supabase."""
+    sb = get_supabase()
+    rows = (sb.table("assessments")
+            .select("id, phase, company_name, model_choice, report_filename, report_name, "
+                    "created_at, finalized_at, input_files, sections_modified, "
+                    "sections_unmodified, changes")
+            .order("created_at", desc=True)
+            .execute())
 
-        inputs_dir = d / "inputs"
-        input_files = [f.name for f in inputs_dir.iterdir() if f.is_file()] if inputs_dir.exists() else []
+    result = []
+    for r in rows.data:
+        sections_data = r.get("changes", {})
+        section_count = (sections_data.get("summary", {}).get("total_sections")
+                         if sections_data else None)
 
         entry = {
-            "name": d.name,
-            "input_files": input_files,
-            "has_state": (d / "state.json").exists(),
-            "has_original": (d / "original_report.html").exists(),
-            "has_final": (d / "final_report.html").exists(),
+            "name": r["id"],
+            "input_files": r.get("input_files") or [],
+            "has_state": True,
+            "has_original": True,
+            "has_final": r.get("phase") == "complete",
+            "company_name": r.get("company_name"),
+            "model": r.get("model_choice"),
+            "finalized_at": r.get("finalized_at"),
+            "section_count": section_count,
+            "sections_modified": r.get("sections_modified"),
+            "report_name": r.get("report_name") or r.get("report_filename"),
         }
-
-        # Include metadata if available
-        meta_path = d / "metadata.json"
-        if meta_path.exists():
-            try:
-                meta = json.loads(meta_path.read_text(encoding="utf-8"))
-                entry["company_name"] = meta.get("company_name")
-                entry["model"] = meta.get("model")
-                entry["finalized_at"] = meta.get("finalized_at")
-                entry["section_count"] = meta.get("section_count")
-                entry["sections_modified"] = meta.get("sections_modified")
-            except (json.JSONDecodeError, OSError):
-                pass
-
-        # Determine report name from final or any HTML file
-        if (d / "final_report.html").exists():
-            entry["report_name"] = "final_report.html"
-        else:
-            html_files = list(d.glob("*.html"))
-            entry["report_name"] = html_files[0].name if html_files else None
-
         result.append(entry)
     return result
+
+
+def delete_assessment(assessment_id: str):
+    """Delete an assessment from DB and storage."""
+    sb = get_supabase()
+
+    # Delete storage files for this assessment
+    try:
+        files = list_files("assessment-files", assessment_id)
+        if files:
+            paths = [f"{assessment_id}/{f['name']}" for f in files if f.get("name")]
+            delete_files("assessment-files", paths)
+        # Also try inputs subfolder
+        input_files = list_files("assessment-files", f"{assessment_id}/inputs")
+        if input_files:
+            paths = [f"{assessment_id}/inputs/{f['name']}" for f in input_files if f.get("name")]
+            delete_files("assessment-files", paths)
+    except Exception:
+        pass  # Storage cleanup is best-effort
+
+    # Delete DB row
+    sb.table("assessments").delete().eq("id", assessment_id).execute()
+
+    # Clear from cache
+    _assessments.pop(assessment_id, None)

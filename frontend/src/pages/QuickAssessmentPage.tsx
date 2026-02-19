@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { useAssessmentStore } from '../store/assessmentStore'
 import { useSSELogs } from '../hooks/useSSELogs'
 import * as api from '../api/assessment'
@@ -465,9 +466,15 @@ function CompleteView() {
       </div>
 
       <div className="flex gap-3 mb-6">
+        <Link
+          to="/reports"
+          className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
+        >
+          View Reports
+        </Link>
         <button
           onClick={() => store.reset()}
-          className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
+          className="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 font-medium"
         >
           New Assessment
         </button>

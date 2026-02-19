@@ -1,11 +1,11 @@
-"""Few-shot examples management endpoints."""
+"""Few-shot examples management endpoints — backed by Supabase."""
 
 import re
-from pathlib import Path
 
 from fastapi import APIRouter, UploadFile, File, HTTPException
 
-from config.settings import FS_LEARNING_INPUTS_DIR
+from backend.services.supabase_client import get_supabase
+from backend.services.storage_helpers import upload_file, download_file, delete_files
 
 router = APIRouter()
 
@@ -16,34 +16,25 @@ def _get_prefix(filename: str) -> str | None:
 
 
 def _get_examples() -> list[dict]:
-    """Scan learning inputs and group by numeric prefix."""
-    if not FS_LEARNING_INPUTS_DIR.exists():
+    """Query examples + example_files tables and group by prefix."""
+    sb = get_supabase()
+    examples = sb.table("examples").select("prefix, display_name, created_at").order("prefix").execute()
+    if not examples.data:
         return []
 
-    files_by_prefix: dict[str, list[dict]] = {}
-    for f in sorted(FS_LEARNING_INPUTS_DIR.iterdir()):
-        if not f.is_file():
-            continue
-        prefix = _get_prefix(f.name)
-        if not prefix:
-            continue
-        if prefix not in files_by_prefix:
-            files_by_prefix[prefix] = []
-        files_by_prefix[prefix].append({
-            "name": f.name,
-            "size": f.stat().st_size,
-            "type": f.suffix.lower(),
-        })
-
     result = []
-    for prefix, files in sorted(files_by_prefix.items()):
-        # Extract display name from first file
-        first = files[0]["name"]
-        display = re.sub(r"^\d+\.?\s*", "", Path(first).stem)
-        display = re.sub(r"[_.-]", " ", display).strip() or f"Example {prefix}"
+    for ex in examples.data:
+        files_result = (sb.table("example_files")
+                        .select("filename, file_type, size_bytes")
+                        .eq("prefix", ex["prefix"])
+                        .execute())
+        files = [
+            {"name": f["filename"], "size": f.get("size_bytes", 0), "type": f.get("file_type", "")}
+            for f in files_result.data
+        ]
         result.append({
-            "prefix": prefix,
-            "display_name": display,
+            "prefix": ex["prefix"],
+            "display_name": ex["display_name"],
             "files": files,
         })
     return result
@@ -57,10 +48,18 @@ async def list_examples():
 @router.get("/{prefix}/md-preview")
 async def get_md_preview(prefix: str):
     """Get first 3000 chars of the markdown file for an example."""
-    md_files = list(FS_LEARNING_INPUTS_DIR.glob(f"{prefix}*.md"))
-    if not md_files:
+    sb = get_supabase()
+    files = (sb.table("example_files")
+             .select("storage_path, filename")
+             .eq("prefix", prefix)
+             .like("filename", "%.md")
+             .limit(1)
+             .execute())
+    if not files.data:
         raise HTTPException(404, "No markdown file found for this example")
-    content = md_files[0].read_text(encoding="utf-8")
+
+    data = download_file("examples", files.data[0]["storage_path"])
+    content = data.decode("utf-8")
     return {"content": content[:3000]}
 
 
@@ -79,17 +78,42 @@ async def upload_example(
     if md_prefix != pdf_prefix:
         raise HTTPException(400, f"Prefix mismatch: MD={md_prefix}, PDF={pdf_prefix}")
 
-    # Check for existing files with same prefix
-    existing = list(FS_LEARNING_INPUTS_DIR.glob(f"{md_prefix}*"))
-    if existing:
+    sb = get_supabase()
+
+    # Check for existing
+    existing = sb.table("examples").select("prefix").eq("prefix", md_prefix).limit(1).execute()
+    if existing.data:
         raise HTTPException(400, f"Example with prefix {md_prefix} already exists")
 
-    # Save files
-    dest_dir = FS_LEARNING_INPUTS_DIR
-    (dest_dir / md_file.filename).write_bytes(await md_file.read())
-    (dest_dir / pdf_file.filename).write_bytes(await pdf_file.read())
+    # Determine display name
+    display = re.sub(r"^\d+\.?\s*", "", md_file.filename.rsplit(".", 1)[0])
+    display = re.sub(r"[_.-]", " ", display).strip() or f"Example {md_prefix}"
+
+    # Insert example row
+    sb.table("examples").insert({
+        "prefix": md_prefix,
+        "display_name": display,
+    }).execute()
+
+    # Upload files and insert file rows
+    files_to_upload = [(md_file, md_file.filename)]
+    files_to_upload.append((pdf_file, pdf_file.filename))
     if xlsx_file and xlsx_file.filename:
-        (dest_dir / xlsx_file.filename).write_bytes(await xlsx_file.read())
+        files_to_upload.append((xlsx_file, xlsx_file.filename))
+
+    for upload, filename in files_to_upload:
+        content = await upload.read()
+        storage_path = f"{md_prefix}/{filename}"
+        upload_file("examples", storage_path, content)
+
+        suffix = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+        sb.table("example_files").insert({
+            "prefix": md_prefix,
+            "filename": filename,
+            "file_type": f".{suffix}" if suffix else "",
+            "size_bytes": len(content),
+            "storage_path": storage_path,
+        }).execute()
 
     return {"prefix": md_prefix}
 
@@ -97,9 +121,17 @@ async def upload_example(
 @router.delete("/{prefix}")
 async def delete_example(prefix: str):
     """Delete all files for an example prefix."""
-    files = list(FS_LEARNING_INPUTS_DIR.glob(f"{prefix}*"))
-    if not files:
+    sb = get_supabase()
+
+    # Get storage paths to delete
+    files = sb.table("example_files").select("storage_path").eq("prefix", prefix).execute()
+    if not files.data:
         raise HTTPException(404, "No files found for this prefix")
-    for f in files:
-        f.unlink()
-    return {"success": True, "deleted_count": len(files)}
+
+    paths = [f["storage_path"] for f in files.data]
+    delete_files("examples", paths)
+
+    # CASCADE deletes example_files rows
+    sb.table("examples").delete().eq("prefix", prefix).execute()
+
+    return {"success": True, "deleted_count": len(paths)}

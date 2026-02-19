@@ -5,7 +5,7 @@ from pathlib import Path
 
 import docx
 
-from config.settings import MODELS, REPORT_OUTPUT_DIR, AUDIT_LLM_INPUT_DIR, AUDIT_LLM_OUTPUT_DIR
+from config.settings import MODELS
 from core.gemini_client import GeminiClient, clean_html_response, safe_filename
 from core.prompt_builder import build_audit_prompt
 
@@ -21,14 +21,6 @@ def _extract_text_from_docx(filepath: Path) -> str:
     return '\n\n'.join(para.text for para in doc.paragraphs)
 
 
-def _find_latest(directory: Path, pattern: str) -> Path:
-    """Find the most recently modified file matching a glob pattern."""
-    files = list(directory.glob(pattern))
-    if not files:
-        return None
-    return max(files, key=lambda p: p.stat().st_mtime)
-
-
 def audit_report(report_path: Path = None,
                  context_docx_path: Path = None,
                  output_dir: Path = None,
@@ -37,27 +29,17 @@ def audit_report(report_path: Path = None,
                  log_callback=None) -> dict:
     """Run LLM audit review on a generated HTML report.
 
-    Returns dict with keys: 'success', 'output_path', 'message'.
+    Returns dict with keys: 'success', 'html_content', 'output_path', 'message'.
+    When output_dir is provided, also writes to disk.
     """
-    out_dir = output_dir or AUDIT_LLM_OUTPUT_DIR
-    out_dir.mkdir(parents=True, exist_ok=True)
     model_name = model or MODELS["audit_review"]
 
     def log(msg):
         if log_callback:
             log_callback(msg)
 
-    # Find report to audit
-    if not report_path:
-        report_path = _find_latest(AUDIT_LLM_INPUT_DIR, '*.html')
-        if not report_path:
-            report_path = _find_latest(REPORT_OUTPUT_DIR, '*.html')
     if not report_path or not report_path.exists():
         return {"success": False, "message": "No HTML report found to audit."}
-
-    # Find context DOCX
-    if not context_docx_path:
-        context_docx_path = _find_latest(AUDIT_LLM_INPUT_DIR, '*.docx')
     if not context_docx_path or not context_docx_path.exists():
         return {"success": False, "message": "No DOCX context file found for audit."}
 
@@ -90,16 +72,21 @@ def audit_report(report_path: Path = None,
 
         cleaned_html = clean_html_response(audit_html)
 
-        # Save audit report
+        # Save to disk if output_dir provided
         stem = safe_filename(report_path.stem)
         filename = f"Audit_Review_of_{stem}.html"
-        output_path = out_dir / filename
-        output_path.write_text(cleaned_html, encoding='utf-8')
-        log(f"Audit review saved to: {output_path}")
+        output_path = None
+        if output_dir:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_path = output_dir / filename
+            output_path.write_text(cleaned_html, encoding='utf-8')
+            log(f"Audit review saved to: {output_path}")
 
         return {
             "success": True,
+            "html_content": cleaned_html,
             "output_path": output_path,
+            "filename": filename,
             "message": f"Audit review generated: {filename}",
         }
 

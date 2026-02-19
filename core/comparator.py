@@ -4,61 +4,35 @@ import re
 import time
 from pathlib import Path
 
-from config.settings import (MODELS, REPORT_OUTPUT_DIR, EVAL_INPUT_DIR,
-                              EVAL_OUTPUT_DIR, REPORT_INPUTS_DIR)
+from config.settings import MODELS
 from core.gemini_client import GeminiClient, clean_html_response, safe_filename
 from core.prompt_builder import build_comparison_prompt
 
 
-def _find_latest(directory: Path, extensions: list[str]) -> Path:
-    """Find the most recently modified file with one of the given extensions."""
-    latest = None
-    latest_mtime = 0
-    for ext in extensions:
-        for f in directory.glob(f'*.{ext}'):
-            mtime = f.stat().st_mtime
-            if mtime > latest_mtime:
-                latest_mtime = mtime
-                latest = f
-    return latest
-
-
 def compare_reports(human_report_path: Path = None,
                     llm_report_path: Path = None,
-                    afs_dir: Path = None,
+                    afs_path: Path = None,
                     output_dir: Path = None,
                     api_key: str = None,
                     model: str = None,
                     log_callback=None) -> dict:
     """Compare human and LLM financial reports.
 
-    Returns dict with keys: 'success', 'output_path', 'message'.
+    Returns dict with keys: 'success', 'html_content', 'output_path', 'message'.
+    When output_dir is provided, also writes to disk.
     """
-    out_dir = output_dir or EVAL_OUTPUT_DIR
-    out_dir.mkdir(parents=True, exist_ok=True)
     model_name = model or MODELS["comparison"]
 
     def log(msg):
         if log_callback:
             log_callback(msg)
 
-    # Find human report
-    if not human_report_path:
-        human_report_path = _find_latest(EVAL_INPUT_DIR, ['pdf', 'docx'])
     if not human_report_path or not human_report_path.exists():
-        return {"success": False, "message": "No human-created report found in eval_input."}
-
-    # Find LLM report
-    if not llm_report_path:
-        llm_report_path = _find_latest(REPORT_OUTPUT_DIR, ['html'])
+        return {"success": False, "message": "No human-created report provided."}
     if not llm_report_path or not llm_report_path.exists():
-        return {"success": False, "message": "No LLM-generated HTML report found."}
-
-    # Find audited financial statements
-    statements_dir = afs_dir or REPORT_INPUTS_DIR
-    afs_path = _find_latest(statements_dir, ['pdf'])
-    if not afs_path:
-        return {"success": False, "message": "No audited financial statements PDF found."}
+        return {"success": False, "message": "No LLM-generated HTML report provided."}
+    if not afs_path or not afs_path.exists():
+        return {"success": False, "message": "No audited financial statements PDF provided."}
 
     log(f"Human report: {human_report_path.name}")
     log(f"LLM report: {llm_report_path.name}")
@@ -95,13 +69,19 @@ def compare_reports(human_report_path: Path = None,
                                llm_report_path.name)
         company_name = company_raw.group(1) if company_raw else llm_report_path.stem
         filename = f"{safe_filename(company_name)}_eval.html"
-        output_path = out_dir / filename
-        output_path.write_text(comparison_html, encoding='utf-8')
-        log(f"Comparison report saved to: {output_path}")
+
+        output_path = None
+        if output_dir:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_path = output_dir / filename
+            output_path.write_text(comparison_html, encoding='utf-8')
+            log(f"Comparison report saved to: {output_path}")
 
         return {
             "success": True,
+            "html_content": comparison_html,
             "output_path": output_path,
+            "filename": filename,
             "message": f"Comparison report generated: {filename}",
         }
 
